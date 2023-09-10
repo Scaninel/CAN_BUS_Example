@@ -50,3 +50,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+/G431_CAN/Drivers/
+/G431_CAN/MDK-ARM/
