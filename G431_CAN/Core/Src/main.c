@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ssd1306.h"
+#include "system.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,17 +90,9 @@ int main(void)
   MX_FDCAN1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-	ssd1306_Init();
-	
-	ssd1306_WriteString("Sevvalim seni cok",Font_7x10,White);
-  ssd1306_SetCursor(0,15);
-	ssd1306_WriteString("SEVIYORUM",Font_7x10,White);
-//	ssd1306_SetCursor(0,30);
-//	ssd1306_WriteString("Angle Z=",Font_7x10,White);
-//	ssd1306_SetCursor(20,0);
-
-  ssd1306_UpdateScreen();
-  /* USER CODE END 2 */
+  systemInit();
+	firstMessageSend();
+/* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -109,6 +101,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    systemProc();
   }
   /* USER CODE END 3 */
 }
