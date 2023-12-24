@@ -12,6 +12,8 @@ uint8_t LinDataRxLenght;
 
 uint8_t LinRxBuf[13];
 
+uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len);
+
 void UsrLinTxProccess(void)
 {
 	if (g_LinTxButtonPressed)
@@ -92,7 +94,7 @@ HAL_StatusTypeDef UsrLIN_ResponseTx(const uint8_t *data, size_t dataSize)
 	uint8_t f_Txbuffer[9]={0};
 
 	memcpy(f_Txbuffer, data, dataSize);
-	f_Txbuffer[dataSize+1] = HAL_CRC_Calculate(&hcrc, data, dataSize);
+	f_Txbuffer[dataSize+1] = CalculateCrcProc(data, dataSize);
 	
 	return HAL_UART_Transmit(&huart1, f_Txbuffer, dataSize+1, 1000);
 }
@@ -108,7 +110,7 @@ void UsrLIN_RxCallback(void)
 	}
 	else if (!(LinRxBuf[0] == 0 && LinRxBuf[1] == 0) && LinDataRxLenght >= 2 && (LinDataRxLenght == 8+1))
 	{
-		if(LinRxBuf[LinDataRxLenght-1] == (uint8_t )HAL_CRC_Calculate(&hcrc, LinRxBuf, LinDataRxLenght-1))
+		if(LinRxBuf[LinDataRxLenght-1] == CalculateCrcProc(LinRxBuf, LinDataRxLenght-1))
 			g_LinResponseRxCpltFlg = true;
 		else
 		{
@@ -143,4 +145,28 @@ void UsrDelay(const uint32_t timeout)
 	systemTimer = 0;
 	while (systemTimer < timeout)
 		;
+}
+
+uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len)
+{
+    uint8_t crc = 0, len = 0;
+
+    while (len < f_len)
+    {
+        uint8_t extract = f_p[len++];
+        for (uint8_t i = 8; i; i--)
+        {
+            uint8_t sum = (crc ^ extract) & 0x01;
+            crc >>= 1;
+
+            if (sum)
+            {
+                crc ^= 0x8C;
+            }
+
+            extract >>= 1;
+        }
+    }
+
+    return crc;
 }
