@@ -61,6 +61,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 
+extern ADC_HandleTypeDef hadc;
 extern UART_HandleTypeDef huart1;
 extern CRC_HandleTypeDef hcrc;
 extern volatile uint32_t systemTimer;

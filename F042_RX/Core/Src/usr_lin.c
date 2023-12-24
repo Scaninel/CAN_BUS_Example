@@ -1,6 +1,8 @@
 #include "usr_lin.h"
 #include "main.h"
 
+#define TEMPERATURE_OFFSET 26
+
 uint8_t LIN_SingleData;
 volatile uint8_t g_LinHeaderRxCpltFlg;
 volatile uint8_t g_LinResponseRxCpltFlg;
@@ -10,7 +12,11 @@ uint8_t LinDataRxLenght;
 
 uint8_t LinRxBuf[13];
 
+
+uint32_t f_tempAdcVal;
+
 uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len);
+int8_t GetMcuTemp(void);
 
 void UsrLinRxProccess(void)
 {
@@ -28,6 +34,8 @@ void UsrLinRxProccess(void)
 		{
 			f_respTxBuf[i]= i*11;
 		}
+		
+		f_respTxBuf[1] = GetMcuTemp();
 		
 		if(UsrLIN_ResponseTx(f_respTxBuf, 8) == HAL_OK)
 		{
@@ -109,6 +117,23 @@ void UsrDelay(const uint32_t timeout)
 	systemTimer = 0;
 	while (systemTimer < timeout)
 		;
+}
+
+int8_t GetMcuTemp(void)
+{
+	HAL_ADC_Start(&hadc);
+	HAL_ADC_PollForConversion(&hadc,100);
+	f_tempAdcVal = HAL_ADC_GetValue(&hadc);
+	HAL_ADC_Stop(&hadc);
+	
+	double f_temperature = ((1559-(f_tempAdcVal*3.3/4095*1000))/4.3)-TEMPERATURE_OFFSET;
+
+	return (int8_t)f_temperature;
+	
+	//		f_temperautre = (((int32_t) f_tempadcval * vdd_appli / vdd_calib) - (int32_t) *temp30_cal_addr );
+	//		f_temperautre = f_temperautre * (int32_t)(110 - 30);
+	//		f_temperautre = f_temperautre / (int32_t)(*temp110_cal_addr - *temp30_cal_addr);
+	//		f_temperautre = f_temperautre + 30;
 }
 
 uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len)
