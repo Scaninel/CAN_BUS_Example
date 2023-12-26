@@ -22,7 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usr_lin.h"
-
+#include "usr_can.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,9 +54,6 @@ TIM_HandleTypeDef htim16;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-CAN_TxHeaderTypeDef CAN_TxHeader;
-uint8_t CAN_TxData[8];
-uint32_t CAN_TxMailbox;
 
 uint8_t LIN_TxData[8];
 uint32_t systemTimer;
@@ -77,7 +74,7 @@ void CAN_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+	HAL_StatusTypeDef res = HAL_ERROR;
 /* USER CODE END 0 */
 
 /**
@@ -115,27 +112,15 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
-	
-  // Configure the transmit header
-  CAN_TxHeader.StdId = 0x123; // CAN mesaji tanimlayicisi
-  CAN_TxHeader.IDE = CAN_ID_STD;
-  CAN_TxHeader.RTR = CAN_RTR_DATA;
-  CAN_TxHeader.DLC = 8;
-	
-	for (int i = 0; i < 8; i++)
-	{
-		CAN_TxData[i] = (i+1)*11;
-  }
-	
+
 	LIN_TxData[0]=8;
-	
-	for (int i = 4; i < 12; i++)
-	{
-		CAN_TxData[i] = (i+1)*11;
-  }
-	
+
 	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
 	HAL_TIM_Base_Start_IT(&htim16);
+	
+
+	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
+	HAL_CAN_Start(&hcan);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -145,13 +130,15 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		UsrLinTxProccess();
 		
-		if (LinDataRxLenght && !g_LinHeaderRxCpltFlg && (LinTimer > 100))
-		{
-			LinDataRxLenght = 0;
-			memset(LinRxBuf, 0, sizeof(LinRxBuf));
-		}
+		res = UsrCanTxProccess();
+		//UsrLinTxProccess();
+		
+//		if (LinDataRxLenght && !g_LinHeaderRxCpltFlg && (LinTimer > 100))
+//		{
+//			LinDataRxLenght = 0;
+//			memset(LinRxBuf, 0, sizeof(LinRxBuf));
+//		}
 
 
   }
@@ -234,7 +221,24 @@ static void MX_CAN_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN_Init 2 */
+	CAN_FilterTypeDef  sFilterConfig;
+	
+  sFilterConfig.FilterBank = 0;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+  sFilterConfig.FilterIdHigh = 0x0000;
+  sFilterConfig.FilterIdLow = 0x0000;
+  sFilterConfig.FilterMaskIdHigh = 0x0000;
+  sFilterConfig.FilterMaskIdLow = 0x0000;
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.SlaveStartFilterBank = 14;
 
+  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
+  {
+    /* Filter configuration Error */
+    Error_Handler();
+  }
   /* USER CODE END CAN_Init 2 */
 
 }

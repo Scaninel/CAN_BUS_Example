@@ -12,6 +12,8 @@ void UsrDelay(const uint32_t timeout);
 
 extern uint8_t LIN_SingleData;
 extern volatile uint8_t g_LinHeaderRxCpltFlg;
+extern volatile uint8_t g_LinResponseRxCpltFlg;
+//extern volatile uint8_t g_LinTxButtonPressed;
 extern uint8_t g_LinHeaderRxId;
 extern uint8_t LinRxBuf[13];
 extern volatile uint32_t LinTimer;

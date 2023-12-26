@@ -63,6 +63,7 @@ void Error_Handler(void);
 
 extern ADC_HandleTypeDef hadc;
 extern UART_HandleTypeDef huart1;
+extern CAN_HandleTypeDef hcan;
 extern CRC_HandleTypeDef hcrc;
 extern volatile uint32_t systemTimer;
 

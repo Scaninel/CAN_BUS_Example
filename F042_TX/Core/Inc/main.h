@@ -61,6 +61,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 extern UART_HandleTypeDef huart1;
+extern CAN_HandleTypeDef hcan;
 extern CRC_HandleTypeDef hcrc;
 extern uint32_t systemTimer;
 /* USER CODE END Private defines */
