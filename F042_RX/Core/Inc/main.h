@@ -67,6 +67,8 @@ extern CAN_HandleTypeDef hcan;
 extern CRC_HandleTypeDef hcrc;
 extern volatile uint32_t systemTimer;
 
+extern uint8_t g_mcuTemp;
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

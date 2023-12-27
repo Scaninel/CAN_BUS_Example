@@ -5,6 +5,8 @@ CAN_TxHeaderTypeDef CAN_TxHeader;
 uint8_t CAN_TxData[2];
 uint32_t CAN_TxMailbox;
 
+uint8_t g_CANstat;
+
 //HAL_StatusTypeDef UsrCanTxProccess(void)
 //{
 //	if (g_LinTxButtonPressed)

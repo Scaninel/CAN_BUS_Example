@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "usr_lin.h"
 #include "usr_can.h"
+#include "usr_screen.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +48,8 @@ CAN_HandleTypeDef hcan;
 
 CRC_HandleTypeDef hcrc;
 
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim16;
 
 UART_HandleTypeDef huart1;
@@ -56,7 +59,8 @@ CAN_RxHeaderTypeDef RxHeader;
 uint8_t RxData[8];
 volatile uint32_t systemTimer;
 
-int datacheck = 0;
+int datacheck;
+uint8_t g_mcuTemp;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,6 +71,7 @@ static void MX_CRC_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM16_Init(void);
 static void MX_ADC_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -78,11 +83,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
   if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
   {
+		g_CANstat = false;
     Error_Handler();
   }
 
   if ((RxHeader.StdId == 0x103))
   {
+		g_CANstat = true;
 	  datacheck = 1;
   }
 }
@@ -122,6 +129,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM16_Init();
   MX_ADC_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 	
 	HAL_CAN_Start(&hcan);
@@ -130,6 +138,9 @@ int main(void)
 	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
 	
 	HAL_TIM_Base_Start_IT(&htim16);
+	
+	UsrScreenInit();
+	SetMainScreen();
 
   /* USER CODE END 2 */
 
@@ -140,6 +151,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		UpdateMainScreen();
 		
 		UsrLinRxProccess();
 		
@@ -150,6 +162,7 @@ int main(void)
 			UsrDelay(100);
 			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
 			UsrDelay(100);
+			g_mcuTemp=GetMcuTemp();
 		}
 			
 
@@ -193,8 +206,9 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_I2C1;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -337,6 +351,54 @@ static void MX_CRC_Init(void)
   /* USER CODE BEGIN CRC_Init 2 */
 
   /* USER CODE END CRC_Init 2 */
+
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x2000090E;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
 
 }
 

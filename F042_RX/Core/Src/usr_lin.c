@@ -16,7 +16,7 @@ uint8_t LinRxBuf[13];
 uint32_t f_tempAdcVal;
 
 uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len);
-int8_t GetMcuTemp(void);
+
 
 void UsrLinRxProccess(void)
 {
