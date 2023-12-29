@@ -1,5 +1,7 @@
 #include "usr_can.h"
 
+CAN_RxHeaderTypeDef RxHeader;
+uint8_t RxData[8];
 
 CAN_TxHeaderTypeDef CAN_TxHeader;
 uint8_t CAN_TxData[2];

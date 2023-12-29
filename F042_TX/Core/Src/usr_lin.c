@@ -1,13 +1,17 @@
 #include "usr_system.h"
 #include "usr_lin.h"
 
+#define LIN_TX_PERIOD 5000
+#define LIN_BUS_ERROR_TIME 100
+
 volatile uint8_t g_ButtonPressed;
 
 uint8_t LIN_SingleData;
 volatile uint8_t g_LinHeaderRxCpltFlg;
 volatile uint8_t g_LinResponseRxCpltFlg;
 uint8_t g_LinHeaderRxId;
-volatile uint32_t LinTimer;
+volatile uint32_t LinBusCheckTimer;
+volatile uint32_t LinTxTimer;
 uint8_t LinDataRxLenght;
 
 uint8_t LinRxBuf[13];
@@ -16,12 +20,10 @@ uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len);
 
 void UsrLinTxProccess(void)
 {
-	if (g_ButtonPressed)
+	if (LinTxTimer > LIN_TX_PERIOD)
 	{
-		g_ButtonPressed = false;
-		
-		HAL_Delay(50);
-		
+		LinTxTimer = 0;
+
 		uint8_t Txdata[8]={0};
 		
 		Txdata[0]=20;
@@ -72,7 +74,7 @@ void UsrLinRxProccess(void)
 			UsrLedBlink(250,3);
 		}
 	}
-	else if (LinDataRxLenght && !g_LinHeaderRxCpltFlg && LinTimer > 100)
+	else if (LinDataRxLenght && !g_LinHeaderRxCpltFlg && LinBusCheckTimer > LIN_BUS_ERROR_TIME)
 	{
 		LinDataRxLenght = 0;
 		memset(LinRxBuf, 0, sizeof(LinRxBuf));
@@ -82,6 +84,8 @@ void UsrLinRxProccess(void)
 HAL_StatusTypeDef UsrLIN_HeaderTx(const uint8_t id)
 {
 	uint8_t f_Txbuffer[4]={0,0,0x55, id};
+	
+	HAL_HalfDuplex_EnableTransmitter(&huart1);
 	
 	return HAL_UART_Transmit(&huart1, f_Txbuffer, 4, 1000);
 }
@@ -95,6 +99,8 @@ HAL_StatusTypeDef UsrLIN_ResponseTx(const uint8_t *data, size_t dataSize)
 
 	memcpy(f_Txbuffer, data, dataSize);
 	f_Txbuffer[dataSize+1] = CalculateCrcProc(data, dataSize);
+	
+	HAL_HalfDuplex_EnableTransmitter(&huart1);
 	
 	return HAL_UART_Transmit(&huart1, f_Txbuffer, dataSize+1, 1000);
 }
@@ -125,7 +131,8 @@ void UsrLIN_RxCallback(void)
 		LinDataRxLenght = 0;
 	}
 	
-	LinTimer = 0;
+	LinBusCheckTimer = 0;
+	HAL_HalfDuplex_EnableReceiver(&huart1);
 	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);	
 }
 

@@ -6,6 +6,7 @@
 CAN_TxHeaderTypeDef CAN_TxHeader;
 uint8_t CAN_TxData[2];
 uint32_t CAN_TxMailbox;
+volatile uint32_t canTimer;
 
 HAL_StatusTypeDef UsrCanTxProccess(void)
 {

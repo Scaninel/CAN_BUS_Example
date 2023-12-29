@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "usr_system.h"
 #include "usr_lin.h"
 #include "usr_can.h"
 #include "usr_screen.h"
@@ -55,12 +56,7 @@ TIM_HandleTypeDef htim16;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-CAN_RxHeaderTypeDef RxHeader;
-uint8_t RxData[8];
-volatile uint32_t systemTimer;
 
-int datacheck;
-uint8_t g_mcuTemp;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -131,16 +127,8 @@ int main(void)
   MX_ADC_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-	
-	HAL_CAN_Start(&hcan);
-	HAL_CAN_ActivateNotification(&hcan,CAN_IT_RX_FIFO0_MSG_PENDING);
-	
-	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
-	
-	HAL_TIM_Base_Start_IT(&htim16);
-	
-	UsrScreenInit();
-	SetMainScreen();
+
+  UsrSystemInit();
 
   /* USER CODE END 2 */
 
@@ -151,20 +139,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		UpdateMainScreen();
-		
-		UsrLinRxProccess();
-		
-		if(datacheck)
-		{
-			datacheck=0;
-			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
-			UsrDelay(100);
-			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
-			UsrDelay(100);
-			g_mcuTemp=GetMcuTemp();
-		}
-			
+
+    UsrSystemGeneral();
 
   }
   /* USER CODE END 3 */
@@ -450,7 +426,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 38400;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -459,7 +435,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_LIN_Init(&huart1, UART_LINBREAKDETECTLENGTH_10B) != HAL_OK)
+  if (HAL_HalfDuplex_Init(&huart1) != HAL_OK)
   {
     Error_Handler();
   }

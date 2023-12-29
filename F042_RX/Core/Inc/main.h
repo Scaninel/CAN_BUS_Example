@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "string.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -46,8 +46,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-#define true 1
-#define false 0
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -66,8 +65,7 @@ extern UART_HandleTypeDef huart1;
 extern CAN_HandleTypeDef hcan;
 extern CRC_HandleTypeDef hcrc;
 extern volatile uint32_t systemTimer;
-
-extern uint8_t g_mcuTemp;
+extern TIM_HandleTypeDef htim16;
 
 /* USER CODE END Private defines */
 

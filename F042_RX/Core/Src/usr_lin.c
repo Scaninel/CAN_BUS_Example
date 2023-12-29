@@ -1,3 +1,5 @@
+#include "usr_system.h"
+#include <string.h>
 #include "usr_lin.h"
 #include "main.h"
 

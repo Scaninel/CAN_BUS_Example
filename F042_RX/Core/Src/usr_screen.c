@@ -1,3 +1,4 @@
+#include "usr_system.h"
 #include "usr_screen.h"
 #include "usr_can.h"
 #include "fonts.h"
