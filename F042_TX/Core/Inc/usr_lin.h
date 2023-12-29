@@ -13,7 +13,7 @@ void UsrLinTxProccess(void);
 extern uint8_t LIN_SingleData;
 extern volatile uint8_t g_LinHeaderRxCpltFlg;
 extern volatile uint8_t g_LinResponseRxCpltFlg;
-extern volatile uint8_t g_LinTxButtonPressed;
+extern volatile uint8_t g_ButtonPressed;
 extern volatile uint32_t LinTimer;
 extern uint8_t LinDataRxLenght;
 extern uint8_t LinRxBuf[13];

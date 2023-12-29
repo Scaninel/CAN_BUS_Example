@@ -56,3 +56,4 @@ dkms.conf
 /G431_CAN/MDK-ARM/
 Drivers/
 MDK-ARM/
+Middlewares/

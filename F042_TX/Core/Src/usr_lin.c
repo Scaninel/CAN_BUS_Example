@@ -1,7 +1,7 @@
+#include "usr_system.h"
 #include "usr_lin.h"
-#include "main.h"
 
-volatile uint8_t g_LinTxButtonPressed;
+volatile uint8_t g_ButtonPressed;
 
 uint8_t LIN_SingleData;
 volatile uint8_t g_LinHeaderRxCpltFlg;
@@ -16,9 +16,9 @@ uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len);
 
 void UsrLinTxProccess(void)
 {
-	if (g_LinTxButtonPressed)
+	if (g_ButtonPressed)
 	{
-		g_LinTxButtonPressed = false;
+		g_ButtonPressed = false;
 		
 		HAL_Delay(50);
 		

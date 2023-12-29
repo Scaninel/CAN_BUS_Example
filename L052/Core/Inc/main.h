@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f0xx_hal.h"
+#include "stm32l0xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -59,10 +59,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-extern UART_HandleTypeDef huart1;
-extern CAN_HandleTypeDef hcan;
-extern CRC_HandleTypeDef hcrc;
-extern TIM_HandleTypeDef htim16;
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

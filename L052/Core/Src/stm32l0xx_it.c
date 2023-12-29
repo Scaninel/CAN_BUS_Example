@@ -1,7 +1,7 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    stm32f0xx_it.c
+  * @file    stm32l0xx_it.c
   * @brief   Interrupt Service Routines.
   ******************************************************************************
   * @attention
@@ -19,11 +19,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f0xx_it.h"
+#include "stm32l0xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usr_system.h"
-#include "usr_lin.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,15 +55,16 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern CAN_HandleTypeDef hcan;
-extern TIM_HandleTypeDef htim16;
+extern TIM_HandleTypeDef htim6;
 extern UART_HandleTypeDef huart1;
+extern TIM_HandleTypeDef htim22;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
 
 /******************************************************************************/
-/*           Cortex-M0 Processor Interruption and Exception Handlers          */
+/*           Cortex-M0+ Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
   * @brief This function handles Non maskable interrupt.
@@ -131,46 +130,45 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
+
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
 }
 
 /******************************************************************************/
-/* STM32F0xx Peripheral Interrupt Handlers                                    */
+/* STM32L0xx Peripheral Interrupt Handlers                                    */
 /* Add here the Interrupt Handlers for the used peripherals.                  */
 /* For the available peripheral interrupt handler names,                      */
-/* please refer to the startup file (startup_stm32f0xx.s).                    */
+/* please refer to the startup file (startup_stm32l0xx.s).                    */
 /******************************************************************************/
 
 /**
-  * @brief This function handles EXTI line 0 and 1 interrupts.
+  * @brief This function handles TIM6 global interrupt and DAC1/DAC2 underrun error interrupts.
   */
-void EXTI0_1_IRQHandler(void)
+void TIM6_DAC_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI0_1_IRQn 0 */
-	g_ButtonPressed = true;
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
 
-  /* USER CODE END EXTI0_1_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-  /* USER CODE BEGIN EXTI0_1_IRQn 1 */
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
-  /* USER CODE END EXTI0_1_IRQn 1 */
+  /* USER CODE END TIM6_DAC_IRQn 1 */
 }
 
 /**
-  * @brief This function handles TIM16 global interrupt.
+  * @brief This function handles TIM22 global interrupt.
   */
-void TIM16_IRQHandler(void)
+void TIM22_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM16_IRQn 0 */
+  /* USER CODE BEGIN TIM22_IRQn 0 */
 
-  /* USER CODE END TIM16_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim16);
-  /* USER CODE BEGIN TIM16_IRQn 1 */
+  /* USER CODE END TIM22_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim22);
+  /* USER CODE BEGIN TIM22_IRQn 1 */
 
-  /* USER CODE END TIM16_IRQn 1 */
+  /* USER CODE END TIM22_IRQn 1 */
 }
 
 /**
@@ -187,31 +185,6 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 1 */
 }
 
-/**
-  * @brief This function handles HDMI-CEC and CAN global interrupts / HDMI-CEC wake-up interrupt through EXTI line 27.
-  */
-void CEC_CAN_IRQHandler(void)
-{
-  /* USER CODE BEGIN CEC_CAN_IRQn 0 */
-
-  /* USER CODE END CEC_CAN_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan);
-  /* USER CODE BEGIN CEC_CAN_IRQn 1 */
-
-  /* USER CODE END CEC_CAN_IRQn 1 */
-}
-
 /* USER CODE BEGIN 1 */
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	UsrLIN_RxCallback();
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	systemTimer++;
-	LinTimer++;
-	canTimer++;
-}
 /* USER CODE END 1 */
