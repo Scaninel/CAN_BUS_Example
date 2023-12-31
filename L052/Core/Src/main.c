@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usr_system.h"
+#include "usr_lin.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,7 +41,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-RNG_HandleTypeDef hrng;
 
 TIM_HandleTypeDef htim6;
 
@@ -97,7 +97,7 @@ int main(void)
   MX_TIM6_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
+	UsrSystemInit();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -107,10 +107,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
-		HAL_Delay(250);
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-		HAL_Delay(250);
+		UsrSystemGeneral();
   }
   /* USER CODE END 3 */
 }
@@ -178,14 +175,13 @@ static void MX_RNG_Init(void)
 
   /* USER CODE END RNG_Init 0 */
 
+  /* Peripheral clock enable */
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_RNG);
+
   /* USER CODE BEGIN RNG_Init 1 */
 
   /* USER CODE END RNG_Init 1 */
-  hrng.Instance = RNG;
-  if (HAL_RNG_Init(&hrng) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  LL_RNG_Enable(RNG);
   /* USER CODE BEGIN RNG_Init 2 */
 
   /* USER CODE END RNG_Init 2 */
@@ -315,7 +311,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+	if (htim->Instance == TIM6) {
+    systemTimer++;
+		LinBusCheckTimer++;
+  }
   /* USER CODE END Callback 1 */
 }
 

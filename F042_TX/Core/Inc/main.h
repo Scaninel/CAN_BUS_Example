@@ -59,6 +59,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
+extern ADC_HandleTypeDef hadc;
 extern UART_HandleTypeDef huart1;
 extern CAN_HandleTypeDef hcan;
 extern CRC_HandleTypeDef hcrc;

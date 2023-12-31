@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "usr_system.h"
 #include "usr_lin.h"
+#include "usr_can.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

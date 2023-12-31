@@ -196,7 +196,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	systemTimer++;
-	LinTimer++;
+	LinBusCheckTimer++;
+	LinTxTimer++;
 }
 
 /* USER CODE END 1 */

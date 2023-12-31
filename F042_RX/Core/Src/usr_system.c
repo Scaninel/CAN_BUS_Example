@@ -9,9 +9,10 @@ int datacheck;
 
 void UsrSystemInit(void)
 {
-    HAL_CAN_Start(&hcan);
+  HAL_CAN_Start(&hcan);
 	HAL_CAN_ActivateNotification(&hcan,CAN_IT_RX_FIFO0_MSG_PENDING);
 	
+	HAL_HalfDuplex_EnableReceiver(&huart1);
 	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
 	
 	HAL_TIM_Base_Start_IT(&htim16);
@@ -22,19 +23,17 @@ void UsrSystemInit(void)
 
 void UsrSystemGeneral(void)
 {
+	UpdateMainScreen();
+	UsrLinTxProccess();
+	UsrLinRxProccess();
 
-    UpdateMainScreen();
-
-    UsrLinRxProccess();
-
-    if(datacheck)
-    {
-	  datacheck=0;
-      HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
-      UsrDelay(100);
-      HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
-      UsrDelay(100);
-      g_mcuTemp=GetMcuTemp();
-    }
-
+	if(datacheck)
+	{
+	datacheck=0;
+		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
+		UsrDelay(100);
+		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
+		UsrDelay(100);
+		g_mcuTemp=GetMcuTemp();
+	}
 }

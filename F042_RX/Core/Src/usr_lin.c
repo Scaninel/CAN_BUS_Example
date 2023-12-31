@@ -3,22 +3,93 @@
 #include "usr_lin.h"
 #include "main.h"
 
+#define LIN_TX_PERIOD 5000
+#define LIN_BUS_ERROR_TIME 100
 #define TEMPERATURE_OFFSET 26
 
 uint8_t LIN_SingleData;
 volatile uint8_t g_LinHeaderRxCpltFlg;
 volatile uint8_t g_LinResponseRxCpltFlg;
 uint8_t g_LinHeaderRxId;
-volatile uint32_t LinTimer;
+volatile uint32_t LinBusCheckTimer;
+volatile uint32_t LinTxTimer;
 uint8_t LinDataRxLenght;
+volatile uint8_t g_LinStat;
 
 uint8_t LinRxBuf[13];
-
+uint8_t LinTempVal;
+uint8_t LinHeaderSent;
 
 uint32_t f_tempAdcVal;
+volatile uint8_t LinIdSlct; 
 
 uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len);
 
+/*PERIODIC LIN TX MESSAGE*/
+void UsrLinTxProccess(void)
+{
+	if (LinTxTimer > LIN_TX_PERIOD)
+	{
+		LinTxTimer = 0;
+		uint8_t LinId=0;
+		
+		if(LinIdSlct)
+		{
+			LinIdSlct = 0;
+			LinId=0xCA;
+		}
+		else
+		{
+			LinIdSlct = 1;
+			LinId=0xCC;
+		}
+			
+		if (UsrLIN_HeaderTx(LinId) == HAL_OK)
+		{
+			LinBusCheckTimer = 0;
+			
+			/*WAIT FOR RESPONSE*/
+			while(!g_LinResponseRxCpltFlg)
+			{
+				if(LinBusCheckTimer > 500)
+					break;
+			}
+			
+			if(g_LinResponseRxCpltFlg)
+			{
+				g_LinStat = 1;
+				
+				switch (LinIdSlct)
+				{
+					case 0: //0xCA, F042 slave
+					{
+						;
+						break;
+					}
+					case 1: //0xCC, L052 slave
+					{
+						;
+						break;
+					}
+				}
+				g_LinResponseRxCpltFlg = false;
+			}
+		}
+		else
+		{
+			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
+			HAL_Delay(1000);
+			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
+			HAL_Delay(1000);
+			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
+			HAL_Delay(1000);
+			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
+			HAL_Delay(1000);
+		}
+		
+		HAL_HalfDuplex_EnableReceiver(&huart1);
+	}
+}
 
 void UsrLinRxProccess(void)
 {
@@ -41,10 +112,12 @@ void UsrLinRxProccess(void)
 		
 		if(UsrLIN_ResponseTx(f_respTxBuf, 8) == HAL_OK)
 		{
+			LinBusCheckTimer = 0;
 			UsrLedBlink(250,3);
 		}
+		HAL_HalfDuplex_EnableReceiver(&huart1);
 	}
-	else if (LinDataRxLenght && !g_LinHeaderRxCpltFlg && LinTimer > 100)
+	else if (LinDataRxLenght && !g_LinHeaderRxCpltFlg && LinBusCheckTimer > 100)
 	{
 		LinDataRxLenght = 0;
 		memset(LinRxBuf, 0, sizeof(LinRxBuf));
@@ -54,6 +127,8 @@ void UsrLinRxProccess(void)
 HAL_StatusTypeDef UsrLIN_HeaderTx(const uint8_t id)
 {
 	uint8_t f_Txbuffer[4]={0,0,0x55, id};
+	
+	HAL_HalfDuplex_EnableTransmitter(&huart1);
 	
 	return HAL_UART_Transmit(&huart1, f_Txbuffer, 4, 1000);
 }
@@ -68,6 +143,7 @@ HAL_StatusTypeDef UsrLIN_ResponseTx(const uint8_t *data, size_t dataSize)
 
 	memcpy(f_Txbuffer, data, dataSize);
 	f_Txbuffer[dataSize] = CalculateCrcProc (data, dataSize);
+	HAL_HalfDuplex_EnableTransmitter(&huart1);
 	
 	return HAL_UART_Transmit(&huart1, f_Txbuffer, dataSize+1, 1000);
 }
@@ -81,11 +157,15 @@ void UsrLIN_RxCallback(void)
 	{
 		LinDataRxLenght = 0;
 		g_LinHeaderRxCpltFlg = true;
+		g_LinStat = true;
 	}
 	else if (!(LinRxBuf[0] == 0 && LinRxBuf[1] == 0) && LinDataRxLenght >= 2 && (LinDataRxLenght == 8+1))
 	{
 		if(LinRxBuf[LinDataRxLenght-1] == CalculateCrcProc(LinRxBuf, LinDataRxLenght-1))
+		{
 			g_LinResponseRxCpltFlg = true;
+			g_LinStat = true;
+		}
 		else
 		{
 			g_LinResponseRxCpltFlg = false;
@@ -99,7 +179,8 @@ void UsrLIN_RxCallback(void)
 		LinDataRxLenght = 0;
 	}
 	
-	LinTimer = 0;
+	LinBusCheckTimer = 0;
+	HAL_HalfDuplex_EnableReceiver(&huart1);
 	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);	
 }
 

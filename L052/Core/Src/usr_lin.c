@@ -1,13 +1,14 @@
 #include "usr_system.h"
 #include "usr_lin.h"
 
-#define DEVICE_LIN_ID 0xCA
+#define DEVICE_LIN_ID 0xCC
 #define LIN_TX_PERIOD 5000
 #define LIN_BUS_ERROR_TIME 100
 #define TEMPERATURE_OFFSET 26
 #define TEMP110_CAL_ADDR ((uint16_t*) ((uint32_t) 0x1FFFF7C2))
 #define TEMP30_CAL_ADDR ((uint16_t*) ((uint32_t) 0x1FFFF7B8))
 #define VREFINT_CAL_ADDR ((uint8_t*) ((uint32_t) 0x1FFFF7BA))
+#define NB_OF_GENERATED_RANDOM_NUMBERS 2
 
 volatile uint8_t g_ButtonPressed;
 
@@ -21,7 +22,10 @@ uint8_t LinDataRxLenght;
 
 uint8_t LinRxBuf[13];
 
+uint8_t RandomNumbersGeneration(uint32_t *aRandom32bit);
 uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len);
+uint32_t Getui32Proc(const uint8_t *f_ptr, uint8_t *f_pIndis);
+void Insertui32Proc(uint32_t f_val, uint8_t *f_ptr, uint8_t *f_pIndis);
 
 uint8_t VREFINT_CAL_ADDR_VAL;
 double f_refVolt, f_tempVolt;
@@ -75,12 +79,14 @@ void UsrLinRxProccess(void)
 		
 		uint8_t f_respTxBuf[8] = {0};
 		
-		for(int i=0;i<8;i++)
-		{
-			f_respTxBuf[i]= i*11;
-		}
+		uint32_t f_randNumbers[2]= {0};
+		RandomNumbersGeneration(f_randNumbers);
+		uint8_t f_respTxBufInd=0;
 		
-		f_respTxBuf[1] = GetMcuTemp();
+		for(int i=0;i<2;i++)
+		{
+			Insertui32Proc(f_randNumbers[i], f_respTxBuf, &f_respTxBufInd);
+		}
 		
 		if(UsrLIN_ResponseTx(f_respTxBuf, 8) == HAL_OK)
 		{
@@ -159,58 +165,64 @@ void UsrLIN_RxCallback(void)
 	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);	
 }
 
-int8_t GetMcuTemp(void)
+
+uint8_t RandomNumbersGeneration(uint32_t *aRandom32bit)
 {
-	ADC_ChannelConfTypeDef sConfig = {0};
-	
-	/*Configure for temperature sensor*/
-	sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
-  sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-  sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-	
-	/*Sample for temperature sensor*/
-	HAL_ADC_Start(&hadc);
-	HAL_ADC_PollForConversion(&hadc,100);
-	f_tempAdcVal = HAL_ADC_GetValue(&hadc);
-	HAL_ADC_Stop(&hadc);
-	
-	/*Configure for Vref*/
-	sConfig.Channel = ADC_CHANNEL_VREFINT;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-		
-	/*Sample for Vref*/
-	HAL_ADC_Start(&hadc);
-	HAL_ADC_PollForConversion(&hadc,100);
-	f_vrefAdcVal = HAL_ADC_GetValue(&hadc);
-	HAL_ADC_Stop(&hadc);
-	
-	f_refVolt = (double)(f_vrefAdcVal*3/(*VREFINT_CAL_ADDR));
-	f_tempVolt = (double)(f_refVolt * f_tempAdcVal / 4095);
+  register uint8_t index = 0;
 
-	double f_temperature = ((1559-(f_tempAdcVal*3.3/4095*1000))/4.3)-TEMPERATURE_OFFSET;
+  /* Initialize random numbers generation */
 
-	return (int8_t)f_temperature;
+  /* Generate Random 32bit Numbers */
+  for(index = 0; index < NB_OF_GENERATED_RANDOM_NUMBERS; index++)
+  {
+#if (USE_TIMEOUT == 1)
+    Timeout = RNG_GENERATION_TIMEOUT;
+#endif /* USE_TIMEOUT */
+
+    /* Wait for DRDY flag to be raised */
+    while (!LL_RNG_IsActiveFlag_DRDY(RNG))
+    {
+#if (USE_TIMEOUT == 1)
+      /* Check Systick counter flag to decrement the time-out value */
+      if (LL_SYSTICK_IsActiveCounterFlag()) 
+      { 
+        if(Timeout-- == 0)
+        {
+          /* Time-out occurred. Set LED to blinking mode */
+          LED_Blinking(LED_BLINK_SLOW);
+        }
+      } 
+#endif /* USE_TIMEOUT */
+    }
+
+    /* Check if error occurs */
+    if (   (LL_RNG_IsActiveFlag_CECS(RNG) )
+        || (LL_RNG_IsActiveFlag_SECS(RNG))  )
+    {
+      /* Clock or Seed Error detected. Set LED to blinking mode (Error type)*/
+      return false;
+    }
+    
+    /* Otherwise, no error detected : Value of generated random number could be retrieved
+       and stored in dedicated array */
+    aRandom32bit[index] = LL_RNG_ReadRandData32(RNG);
+  }
+
+  /* Stop random numbers generation */
+  LL_RNG_Disable(RNG);
 	
-	//		f_temperautre = (((int32_t) f_tempadcval * vdd_appli / vdd_calib) - (int32_t) *temp30_cal_addr );
-	//		f_temperautre = f_temperautre * (int32_t)(110 - 30);
-	//		f_temperautre = f_temperautre / (int32_t)(*temp110_cal_addr - *temp30_cal_addr);
-	//		f_temperautre = f_temperautre + 30;
+	return true;
 }
+
+
 
 void UsrLedBlink(const uint32_t timeout, const uint8_t blinkCount)
 {
 	for(int i=0;i<blinkCount;i++)
 	{
-		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_5,GPIO_PIN_SET);
 		UsrDelay(timeout);
-		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_5,GPIO_PIN_RESET);
 		UsrDelay(timeout);
 	}
 }
@@ -224,24 +236,49 @@ void UsrDelay(const uint32_t timeout)
 
 uint8_t CalculateCrcProc(const uint8_t *f_p, uint8_t f_len)
 {
-    uint8_t crc = 0, len = 0;
+	uint8_t crc = 0, len = 0;
 
-    while (len < f_len)
+	while (len < f_len)
+	{
+		uint8_t extract = f_p[len++];
+		for (uint8_t i = 8; i; i--)
+		{
+			uint8_t sum = (crc ^ extract) & 0x01;
+			crc >>= 1;
+
+			if (sum)
+					crc ^= 0x8C;
+
+			extract >>= 1;
+		}
+	}
+
+	return crc;
+}
+
+uint32_t Getui32Proc(const uint8_t *f_ptr, uint8_t *f_pIndis)
+{
+    uint8_t indis = *f_pIndis;
+
+    U_CONVERTER uConvert;
+    for (int8_t i = 3; i >= 0; i--)
     {
-        uint8_t extract = f_p[len++];
-        for (uint8_t i = 8; i; i--)
-        {
-            uint8_t sum = (crc ^ extract) & 0x01;
-            crc >>= 1;
-
-            if (sum)
-            {
-                crc ^= 0x8C;
-            }
-
-            extract >>= 1;
-        }
+        uConvert.buf[i] = f_ptr[indis++];
     }
 
-    return crc;
+    *f_pIndis = indis;
+    return uConvert.uival;
+}
+
+void Insertui32Proc(uint32_t f_val, uint8_t *f_ptr, uint8_t *f_pIndis)
+{
+    uint8_t indis = *f_pIndis;
+
+    U_CONVERTER uConvert;
+    uConvert.ui32val = f_val;
+
+    for (int8_t i = 0; i < 4; i++)
+        f_ptr[indis++] = uConvert.buf[3 - i];
+
+    *f_pIndis = indis;
 }
