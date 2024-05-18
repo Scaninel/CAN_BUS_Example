@@ -1,7 +1,6 @@
 #include "usr_system.h"
 #include "usr_can.h"
 #include "usr_lin.h"
-#include "usr_screen.h"
 
 uint8_t g_mcuTemp;
 volatile uint32_t systemTimer;
@@ -17,13 +16,10 @@ void UsrSystemInit(void)
 	
 	HAL_TIM_Base_Start_IT(&htim16);
 	
-	UsrScreenInit();
-	SetMainScreen();
 }
 
 void UsrSystemGeneral(void)
 {
-	UpdateMainScreen();
 	UsrLinTxProccess();
 	UsrLinRxProccess();
 
