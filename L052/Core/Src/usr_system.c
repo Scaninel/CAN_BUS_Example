@@ -15,6 +15,6 @@ void UsrSystemInit(void)
 
 void UsrSystemGeneral(void)
 {
-	//UsrLinRxProccess();
+	UsrLinRxProccess();
 
 }
