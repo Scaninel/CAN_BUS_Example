@@ -9,8 +9,6 @@
 #define TEMP30_CAL_ADDR ((uint16_t*) ((uint32_t) 0x1FFFF7B8))
 #define VREFINT_CAL_ADDR ((uint8_t*) ((uint32_t) 0x1FFFF7BA))
 
-volatile uint8_t g_ButtonPressed;
-
 uint8_t LIN_SingleData;
 volatile uint8_t g_LinHeaderRxCpltFlg;
 volatile uint8_t g_LinResponseRxCpltFlg;

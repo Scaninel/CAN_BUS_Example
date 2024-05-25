@@ -14,7 +14,6 @@ int8_t GetMcuTemp(void);
 extern uint8_t LIN_SingleData;
 extern volatile uint8_t g_LinHeaderRxCpltFlg;
 extern volatile uint8_t g_LinResponseRxCpltFlg;
-extern volatile uint8_t g_ButtonPressed;
 extern volatile uint32_t LinTxTimer;
 extern volatile uint32_t LinBusCheckTimer;
 extern uint8_t LinDataRxLenght;

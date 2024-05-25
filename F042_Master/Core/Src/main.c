@@ -82,7 +82,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   if ((RxHeader.StdId == 0x103))
   {
 		g_CANstat = true;
-	  datacheck = 1;
+	  g_CAN_DataReceived = 1;
   }
 }
 
@@ -123,7 +123,7 @@ int main(void)
   MX_ADC_Init();
   /* USER CODE BEGIN 2 */
 
-  //UsrSystemInit();
+  UsrSystemInit();
 
   /* USER CODE END 2 */
 
@@ -135,12 +135,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-    //UsrSystemGeneral();
-		
-		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3, GPIO_PIN_SET);
-		HAL_Delay(250);
-		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3, GPIO_PIN_RESET);
-		HAL_Delay(250);
+    UsrSystemGeneral();
 
   }
   /* USER CODE END 3 */

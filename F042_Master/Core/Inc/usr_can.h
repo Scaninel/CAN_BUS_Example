@@ -4,4 +4,7 @@
 
 extern CAN_RxHeaderTypeDef RxHeader;
 extern uint8_t RxData[8];
-extern uint8_t g_CANstat;
+volatile extern uint8_t g_CANstat;
+volatile extern uint8_t g_CAN_DataReceived;
+
+void CAN_DataCheck(void);

@@ -1,33 +1,34 @@
 #include "usr_system.h"
 #include "usr_lin.h"
 
-#define CAN_TX_PERIOD 10000
+#define CAN_TX_PERIOD 1000
+#define CAN_MAX_DATA_LENGTH 8
 
 CAN_TxHeaderTypeDef CAN_TxHeader;
-uint8_t CAN_TxData[2];
+uint8_t CAN_TxData[8];
 uint32_t CAN_TxMailbox;
 volatile uint32_t canTimer;
 
-HAL_StatusTypeDef UsrCanTxProccess(void)
+HAL_StatusTypeDef UsrCanTxProccess(uint8_t *data, uint8_t data_size)
 {
-	if (g_ButtonPressed || canTimer > CAN_TX_PERIOD)
+	//return ERROR if data size is more than 8 byte 
+	//if(data_size > CAN_MAX_DATA_LENGTH)
+			//return HAL_ERROR;	
+	
+	//transmit data in TX period
+	if (canTimer > CAN_TX_PERIOD)
 	{
-		g_ButtonPressed = false;
 		canTimer = 0;
 		
-		HAL_Delay(25);
-		
-		CAN_TxHeader.DLC = 2;  // data length
+		CAN_TxHeader.DLC = data_size;  // data length
 		CAN_TxHeader.IDE = CAN_ID_STD;
 		CAN_TxHeader.RTR = CAN_RTR_DATA;
 		CAN_TxHeader.StdId = 0x103;  // ID
 		
-		CAN_TxData[0]=20;
-		CAN_TxData[1]=47;		
+		memcpy(CAN_TxData, data, data_size);
 		
 		return HAL_CAN_AddTxMessage(&hcan,&CAN_TxHeader,CAN_TxData,&CAN_TxMailbox);
-
 	}
 	
-	return HAL_BUSY;
+	return HAL_TIMEOUT;
 }

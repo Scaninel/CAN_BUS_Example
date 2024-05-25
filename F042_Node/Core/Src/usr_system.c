@@ -8,6 +8,9 @@ volatile uint8_t g_ADC_ValReady;
 uint32_t adcValues[3];
 double temperatureVolt;
 uint8_t temperatureCe;
+HAL_StatusTypeDef CAN_RxStat = HAL_ERROR;
+
+void LedBlink(void);
 
 void UsrSystemInit(void)
 {
@@ -24,15 +27,41 @@ void UsrSystemInit(void)
 
 void UsrSystemGeneral(void)
 {
-	//UsrCanTxProccess();
-	//UsrLinRxProccess();
-	//UsrLinTxProccess();
-	
 	if (g_ADC_ValReady)
 	{
 		g_ADC_ValReady = false;
 		
 		temperatureVolt = adcValues[0] * 3.3 / 4096;
-		temperatureCe = (uint8_t)(temperatureVolt * 100);	
+		temperatureCe = (uint8_t)(temperatureVolt * 100);
+		
+		CAN_RxStat = UsrCanTxProccess(&temperatureCe, sizeof(temperatureCe));
+		if(CAN_RxStat == HAL_OK)
+		{
+			LedBlink();
+		}
 	}
+	
+
+	
+	
+	
+	//UsrLinRxProccess();
+	//UsrLinTxProccess();
+	
+	// if (g_ADC_ValReady)
+	// {
+	// 	g_ADC_ValReady = false;
+		
+	// 	temperatureVolt = adcValues[0] * 3.3 / 4096;
+	// 	temperatureCe = (uint8_t)(temperatureVolt * 100);	
+	// }
+}
+
+
+void LedBlink(void)
+{
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+	HAL_Delay(25);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+	HAL_Delay(25);
 }

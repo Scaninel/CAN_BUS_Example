@@ -7,7 +7,10 @@ CAN_TxHeaderTypeDef CAN_TxHeader;
 uint8_t CAN_TxData[2];
 uint32_t CAN_TxMailbox;
 
-uint8_t g_CANstat;
+volatile uint8_t g_CANstat;
+volatile uint8_t g_CAN_DataReceived;
+
+uint8_t receivedTemp;
 
 //HAL_StatusTypeDef UsrCanTxProccess(void)
 //{
@@ -31,3 +34,12 @@ uint8_t g_CANstat;
 //	
 //	return HAL_BUSY;
 //}
+
+void CAN_DataCheck(void)
+{
+	if(g_CAN_DataReceived)
+	{
+		g_CAN_DataReceived=0;
+		receivedTemp = RxData[0];
+	}
+}
