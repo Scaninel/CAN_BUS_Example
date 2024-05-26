@@ -1,4 +1,5 @@
 #include "usr_can.h"
+#include "usr_lin.h"
 
 CAN_RxHeaderTypeDef RxHeader;
 uint8_t RxData[8];
@@ -35,11 +36,14 @@ uint8_t receivedTemp;
 //	return HAL_BUSY;
 //}
 
-void CAN_DataCheck(void)
+HAL_StatusTypeDef CAN_DataCheck(void)
 {
 	if(g_CAN_DataReceived)
 	{
 		g_CAN_DataReceived=0;
-		receivedTemp = RxData[0];
+		
+		return LIN_TxMessage(RxData, 1);
 	}
+
+	return HAL_BUSY;
 }

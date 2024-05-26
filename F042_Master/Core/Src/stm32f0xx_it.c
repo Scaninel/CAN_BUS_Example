@@ -189,15 +189,13 @@ void CEC_CAN_IRQHandler(void)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	UsrLIN_RxCallback();
+
 }
 
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	systemTimer++;
-	LinBusCheckTimer++;
-	LinTxTimer++;
 }
 
 /* USER CODE END 1 */

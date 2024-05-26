@@ -1,6 +1,6 @@
 #include "usr_system.h"
 #include "usr_screen.h"
-//#include "usr_can.h"
+#include "usr_lin.h"
 #include "fonts.h"
 #include "ssd1306.h"
 #include <stdio.h>
@@ -39,20 +39,18 @@ void SetMainScreen(void)
 	ssd1306_UpdateScreen();
 }
 
-//void UpdateMainScreen(void)
-//{
-//	if((writtenCanStat != g_CANstat) || (writtenLinStat != g_LinStat) || (writtenTemp != g_mcuTemp))
-//	{
-//		ssd1306_Fill(Black);
-//		writtenCanStat = g_CANstat;
-//		writtenTemp = g_mcuTemp;
-//		writtenLinStat = g_LinStat;
-//		ssd1306_SetCursor(0, 0);
-//		
-//		char str_writtenTemp[10];
+void UpdateMainScreen(void)
+{
+	if(writtenTemp != Received_Temp)
+	{
+		ssd1306_Fill(Black);
+		writtenTemp = Received_Temp;;
+		ssd1306_SetCursor(0, 0);
+		
+		char str_writtenTemp[10];
 
-//		sprintf(str_writtenTemp, "%d", writtenTemp);
-//		
+		sprintf(str_writtenTemp, "%d", writtenTemp);
+		
 //		if(g_CANstat)
 //			ssd1306_WriteString("CAN :ON",Font_7x10,White);
 //		else
@@ -63,10 +61,15 @@ void SetMainScreen(void)
 //			ssd1306_WriteString("LIN :ON",Font_7x10,White);
 //		else
 //			ssd1306_WriteString("LIN :OFF",Font_7x10,White);
-//		
-//		ssd1306_SetCursor(0, 20);
-//		ssd1306_WriteString("Temp:",Font_7x10,White);
-//		ssd1306_WriteString(str_writtenTemp,Font_7x10,White);
-//		ssd1306_UpdateScreen();
-//	}
-//}
+		
+		ssd1306_WriteString("CAN :-",Font_7x10,White);
+		ssd1306_SetCursor(0, 10);
+		ssd1306_WriteString("LIN :-",Font_7x10,White);
+		ssd1306_SetCursor(0, 20);
+		
+		ssd1306_SetCursor(0, 20);
+		ssd1306_WriteString("Temp:",Font_7x10,White);
+		ssd1306_WriteString(str_writtenTemp,Font_7x10,White);
+		ssd1306_UpdateScreen();
+	}
+}

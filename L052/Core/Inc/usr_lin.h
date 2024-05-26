@@ -1,6 +1,9 @@
 #include "main.h"
 #include "string.h"
 
+#define LIN_BUFFER_LEN 	8
+#define LIN_TEMP_ID 		47
+#define LIN_TEMP_WR_ID 	7
 
 void UsrLIN_RxCallback(void);
 HAL_StatusTypeDef UsrLIN_HeaderTx(const uint8_t id);
@@ -17,4 +20,6 @@ extern volatile uint8_t g_ButtonPressed;
 extern volatile uint32_t LinTxTimer;
 extern volatile uint32_t LinBusCheckTimer;
 extern uint8_t LinDataRxLenght;
-extern uint8_t LinRxBuf[13];
+extern uint8_t LinRxBuf[LIN_BUFFER_LEN];
+
+extern uint8_t Received_Temp;
