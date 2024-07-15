@@ -10,7 +10,9 @@
 #define VREFINT_CAL_ADDR ((uint8_t*) ((uint32_t) 0x1FFFF7BA))
 #define NB_OF_GENERATED_RANDOM_NUMBERS 2
 
-
+#define LIN_SYNC_BREAK_1 0x00
+#define LIN_SYNC_BREAK_2 0x80
+#define LIN_SYNC_FIELD 0x55
 
 
 
@@ -37,47 +39,79 @@ uint32_t f_tempAdcVal;
 uint32_t f_vrefAdcVal;
 
 
-volatile uint8_t LIN_CmdReceived;
+volatile uint8_t LIN_HeaderReceived;
 uint8_t Received_Temp;
+
+volatile uint32_t g_LIN_Timeout;
+volatile uint8_t LIN_DataReceived;
 
 
 void UsrLinRxProccess(void)
 {
-	if(LIN_CmdReceived)
+if(LIN_HeaderReceived == true)
+{
+	if (LinDataRxLenght > 4 && g_LIN_Timeout > 75)
 	{
-		LIN_CmdReceived = false;
-		
-		uint8_t f_calCrc = CalculateLINCrc(LinRxBuf,7);
-		
-		if (LinRxBuf[7] == f_calCrc)
-		{
-			if (LIN_TEMP_WR_ID == LinRxBuf[1])
+			LIN_HeaderReceived = false;
+						
+			if (LIN_TEMP_WR_ID == LinRxBuf[3])
 			{
-				Received_Temp = LinRxBuf[2];
+				uint8_t f_RxCrc = LinRxBuf[5];
+				
+				uint8_t f_CalCrc = CalculateLINCrc(&LinRxBuf[4], 1);
+				
+				if(f_RxCrc == f_CalCrc)
+					Received_Temp = LinRxBuf[4];
 			}
-		}
-		
-		HAL_HalfDuplex_EnableReceiver(&huart1);
-		memset(LinRxBuf, 0, sizeof(LinRxBuf));
+
+			LinDataRxLenght = 0;
+			memset(LinRxBuf, 0, sizeof(LinRxBuf));
 	}
+}
+else if (LIN_HeaderReceived == false && LinDataRxLenght && g_LIN_Timeout > 150)
+{
+	LinDataRxLenght = 0;
+	memset(LinRxBuf, 0, sizeof(LinRxBuf));
+}
+		
+	
+	
+	
+	
+//	if(LIN_HeaderReceived)
+//	{
+//		LIN_HeaderReceived = false;
+//		
+//		uint8_t f_calCrc = CalculateLINCrc(LinRxBuf,7);
+//		
+//		if (LinRxBuf[7] == f_calCrc)
+//		{
+//			if (LIN_TEMP_WR_ID == LinRxBuf[1])
+//			{
+//				Received_Temp = LinRxBuf[2];
+//			}
+//		}
+//		
+//		HAL_HalfDuplex_EnableReceiver(&huart1);
+//		memset(LinRxBuf, 0, sizeof(LinRxBuf));
+//	}
 }
 
 void UsrLIN_RxCallback(void)
 {
 	LinRxBuf[LinDataRxLenght++] = LIN_SingleData;
 
-	if(LinDataRxLenght == 8)
+	if(LinDataRxLenght == 4)
 	{
-		if(LIN_TEMP_ID == LinRxBuf[0])
+		if(LIN_SYNC_BREAK_1 == LinRxBuf[0] && LIN_SYNC_BREAK_2 == LinRxBuf[1] && LIN_SYNC_FIELD == LinRxBuf[2])	
 		{
-			LinDataRxLenght = 0;
-			LIN_CmdReceived = true;
+			LIN_HeaderReceived = true;
 		}
 		else
 		{
 			LinDataRxLenght = 0;
 			memset(LinRxBuf, 0, sizeof(LinRxBuf));
-			LIN_CmdReceived = false;
+			LIN_HeaderReceived = false;
 		}
 	}
 

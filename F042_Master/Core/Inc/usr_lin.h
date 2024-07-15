@@ -4,3 +4,6 @@
 #define _LIN_BUFFER_SIZE 256
 
 HAL_StatusTypeDef LIN_TxMessage(const uint8_t *data, const uint8_t data_size);
+
+HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t data_length);
+HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id);

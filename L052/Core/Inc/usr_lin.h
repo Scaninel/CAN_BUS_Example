@@ -1,7 +1,7 @@
 #include "main.h"
 #include "string.h"
 
-#define LIN_BUFFER_LEN 	8
+#define LIN_BUFFER_LEN 	13
 #define LIN_TEMP_ID 		47
 #define LIN_TEMP_WR_ID 	7
 
@@ -23,3 +23,5 @@ extern uint8_t LinDataRxLenght;
 extern uint8_t LinRxBuf[LIN_BUFFER_LEN];
 
 extern uint8_t Received_Temp;
+
+extern volatile uint32_t g_LIN_Timeout;

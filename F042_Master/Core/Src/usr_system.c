@@ -18,12 +18,17 @@ void UsrSystemInit(void)
 	//HAL_TIM_Base_Start_IT(&htim16);
 }
 
+uint8_t data = 15;
 void UsrSystemGeneral(void)
 {
 	//UsrLinTxProccess();
 	//UsrLinRxProccess();
 	
-	stat = CAN_DataCheck();
+	//stat = CAN_DataCheck();
+	
+	PRO_LIN_TxHeaderData(7, &data,1);
+	data++;
+	HAL_Delay(5000);
 }
 
 void UsrLedBlink(const uint32_t timeout, const uint8_t blinkCount)
