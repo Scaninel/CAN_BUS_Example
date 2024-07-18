@@ -1,7 +1,7 @@
 #include "usr_system.h"
 #include "usr_lin.h"
 
-#define CAN_TX_PERIOD 1000
+#define CAN_TX_PERIOD 5000
 #define CAN_MAX_DATA_LENGTH 8
 
 CAN_TxHeaderTypeDef CAN_TxHeader;
@@ -11,10 +11,6 @@ volatile uint32_t canTimer;
 
 HAL_StatusTypeDef UsrCanTxProccess(uint8_t *data, uint8_t data_size)
 {
-	//return ERROR if data size is more than 8 byte 
-	//if(data_size > CAN_MAX_DATA_LENGTH)
-			//return HAL_ERROR;	
-	
 	//transmit data in TX period
 	if (canTimer > CAN_TX_PERIOD)
 	{

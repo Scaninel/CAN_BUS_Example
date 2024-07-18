@@ -24,27 +24,11 @@ void UsrSystemGeneral(void)
 	//UsrLinTxProccess();
 	//UsrLinRxProccess();
 	
-	//stat = CAN_DataCheck();
+	stat = CAN_DataCheck();
 	
-	PRO_LIN_TxHeaderData(7, &data,1);
-	data++;
-	HAL_Delay(5000);
-}
-
-void UsrLedBlink(const uint32_t timeout, const uint8_t blinkCount)
-{
-	for(int i=0;i<blinkCount;i++)
-	{
-		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
-		UsrDelay(timeout);
-		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
-		UsrDelay(timeout);
-	}
-}
-
-void UsrDelay(const uint32_t timeout)
-{
-	systemTimer = 0;
-	while (systemTimer < timeout)
-		;
+//	PRO_LIN_TxHeaderData(7, &data,1);
+//	data++;
+//	HAL_Delay(2000);
+//	PRO_LIN_TxHeader(77);
+//	HAL_Delay(5000);
 }

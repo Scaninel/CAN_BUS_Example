@@ -3,7 +3,7 @@
 
 #define LIN_BUFFER_LEN 	13
 #define LIN_TEMP_ID 		47
-#define LIN_TEMP_WR_ID 	7
+
 
 void UsrLIN_RxCallback(void);
 HAL_StatusTypeDef UsrLIN_HeaderTx(const uint8_t id);

@@ -7,6 +7,7 @@
 #define LIN_BUFFER_LEN 	8
 #define LIN_TEMP_ID 		47
 #define LIN_TEMP_WR_ID 	7
+#define LIN_TEMP_R_ID 	77
 
 #define LIN_HEADER_LEN 4
 #define LIN_SYNC_BREAK_1 0x00

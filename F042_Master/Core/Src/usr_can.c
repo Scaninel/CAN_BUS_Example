@@ -42,8 +42,13 @@ HAL_StatusTypeDef CAN_DataCheck(void)
 	{
 		g_CAN_DataReceived=0;
 		
-		return LIN_TxMessage(RxData, 1);
+		if (receivedTemp != RxData[0])
+		{
+			receivedTemp = RxData[0];
+			
+			return PRO_LIN_TxHeaderData(7, RxData,1);
+			//return LIN_TxMessage(RxData, 1);
+		}
 	}
-
 	return HAL_BUSY;
 }

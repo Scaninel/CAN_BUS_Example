@@ -9,6 +9,7 @@ void UsrSystemInit(void)
 	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
 	
 	HAL_TIM_Base_Start_IT(&htim6);
+	__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 	UsrScreenInit();
 	SetMainScreen();
 }

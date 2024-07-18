@@ -1,5 +1,7 @@
 #include "usr_system.h"
 #include "usr_lin.h"
+#include <stdlib.h>
+#include "stm32l0xx_hal_uart.h"
 
 #define DEVICE_LIN_ID 0xCC
 #define LIN_TX_PERIOD 5000
@@ -10,10 +12,13 @@
 #define VREFINT_CAL_ADDR ((uint8_t*) ((uint32_t) 0x1FFFF7BA))
 #define NB_OF_GENERATED_RANDOM_NUMBERS 2
 
+#define LIN_HEADER_LEN 4
 #define LIN_SYNC_BREAK_1 0x00
 #define LIN_SYNC_BREAK_2 0x80
 #define LIN_SYNC_FIELD 0x55
-
+#define LIN_TEMP_WR_ID 	7
+#define LIN_TEMP_R_ID 	77
+#define LIN_TEMP_RS_ID 	87
 
 
 volatile uint8_t g_ButtonPressed;
@@ -32,6 +37,8 @@ uint8_t RandomNumbersGeneration(uint32_t *aRandom32bit);
 uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len);
 uint32_t Getui32Proc(const uint8_t *f_ptr, uint8_t *f_pIndis);
 void Insertui32Proc(uint32_t f_val, uint8_t *f_ptr, uint8_t *f_pIndis);
+HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t data_length);
+HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id);
 
 uint8_t VREFINT_CAL_ADDR_VAL;
 double f_refVolt, f_tempVolt;
@@ -50,9 +57,11 @@ void UsrLinRxProccess(void)
 {
 if(LIN_HeaderReceived == true)
 {
-	if (LinDataRxLenght > 4 && g_LIN_Timeout > 75)
+	//if (LinDataRxLenght >= 4 && g_LIN_Timeout > 75)
+	if (LinDataRxLenght >= 4 && (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)))
 	{
 			LIN_HeaderReceived = false;
+		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 						
 			if (LIN_TEMP_WR_ID == LinRxBuf[3])
 			{
@@ -63,13 +72,18 @@ if(LIN_HeaderReceived == true)
 				if(f_RxCrc == f_CalCrc)
 					Received_Temp = LinRxBuf[4];
 			}
-
+			else if (LIN_TEMP_R_ID == LinRxBuf[3])
+			{
+				PRO_LIN_TxHeaderData(LIN_TEMP_RS_ID, &writtenTemp, 1);
+			}
+			
 			LinDataRxLenght = 0;
 			memset(LinRxBuf, 0, sizeof(LinRxBuf));
 	}
 }
-else if (LIN_HeaderReceived == false && LinDataRxLenght && g_LIN_Timeout > 150)
+else if (LIN_HeaderReceived == false && LinDataRxLenght && (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)))
 {
+	__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 	LinDataRxLenght = 0;
 	memset(LinRxBuf, 0, sizeof(LinRxBuf));
 }
@@ -116,7 +130,7 @@ void UsrLIN_RxCallback(void)
 	}
 
 	HAL_HalfDuplex_EnableReceiver(&huart1);
-	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);	
+	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
 }
 
 uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len)
@@ -140,6 +154,69 @@ uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len)
 
 	return crc;
 }
+
+HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t data_length)
+{
+	HAL_StatusTypeDef f_TxStat = HAL_ERROR;
+	
+	uint8_t f_header [LIN_HEADER_LEN] = {0};
+	
+	f_header[0]= LIN_SYNC_BREAK_1;
+	f_header[1]= LIN_SYNC_BREAK_2;
+	f_header[2]= LIN_SYNC_FIELD;
+	f_header[3]= id;
+	
+	uint8_t *f_TxBuf = malloc(LIN_HEADER_LEN + data_length + 1);
+	
+	if(f_TxBuf == NULL)
+		return HAL_ERROR;
+	
+	memcpy(f_TxBuf, f_header, LIN_HEADER_LEN);
+	memcpy(&f_TxBuf[LIN_HEADER_LEN], data, data_length);
+	
+	f_TxBuf[LIN_HEADER_LEN + data_length] = CalculateLINCrc(data, data_length);
+	
+	HAL_HalfDuplex_EnableTransmitter(&huart1);
+	
+	f_TxStat = HAL_UART_Transmit(&huart1, f_TxBuf, LIN_HEADER_LEN + data_length + 1, 1000);
+	
+	HAL_HalfDuplex_EnableReceiver(&huart1);
+	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
+	free(f_TxBuf);
+	
+	return f_TxStat;
+}
+
+HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id)
+{
+	HAL_StatusTypeDef f_TxStat = HAL_ERROR;
+	
+	uint8_t f_header [LIN_HEADER_LEN] = {0};
+	
+	f_header[0]= 0x00;
+	f_header[1]= 0x80;
+	f_header[2]= 0x55;
+	f_header[3]= id;
+	
+	HAL_HalfDuplex_EnableTransmitter(&huart1);
+	
+	f_TxStat = HAL_UART_Transmit(&huart1, f_header, LIN_HEADER_LEN, 1000);
+	
+	HAL_HalfDuplex_EnableReceiver(&huart1);
+	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
+	
+	return f_TxStat;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
