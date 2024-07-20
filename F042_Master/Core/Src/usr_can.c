@@ -1,5 +1,6 @@
 #include "usr_can.h"
-#include "usr_lin.h"
+
+#define CAN_MAX_MSG_TO 30000
 
 CAN_RxHeaderTypeDef RxHeader;
 uint8_t RxData[8];
@@ -10,44 +11,37 @@ uint32_t CAN_TxMailbox;
 
 volatile uint8_t g_CANstat;
 volatile uint8_t g_CAN_DataReceived;
+volatile uint32_t g_CAN_Timer;
 
-uint8_t receivedTemp;
+uint8_t g_LIN_TempTx;
+uint8_t g_LIN_CanStTx;
 
-//HAL_StatusTypeDef UsrCanTxProccess(void)
-//{
-//	if (g_LinTxButtonPressed)
-//	{
-//		g_LinTxButtonPressed = false;
-//		
-//		HAL_Delay(50);
-//		
-//		CAN_TxHeader.DLC = 2;  // data length
-//		CAN_TxHeader.IDE = CAN_ID_STD;
-//		CAN_TxHeader.RTR = CAN_RTR_DATA;
-//		CAN_TxHeader.StdId = 0x103;  // ID
-//		
-//		CAN_TxData[0]=20;
-//		CAN_TxData[1]=47;		
-//		
-//		return HAL_CAN_AddTxMessage(&hcan,&CAN_TxHeader,CAN_TxData,&CAN_TxMailbox);
-
-//	}
-//	
-//	return HAL_BUSY;
-//}
+uint8_t g_CanSt;
+uint8_t g_receivedTemp;
 
 HAL_StatusTypeDef CAN_DataCheck(void)
 {
+	// CAN STATUS CHECK
+	if (g_CAN_Timer > CAN_MAX_MSG_TO)
+	{
+		g_CanSt = false;
+		g_LIN_CanStTx = true;
+	}
+	
+	// CAN MSG PROCESS
 	if(g_CAN_DataReceived)
 	{
 		g_CAN_DataReceived=0;
+		g_CAN_Timer = 0;
 		
-		if (receivedTemp != RxData[0])
+		g_LIN_CanStTx = true;
+		g_CanSt = true;
+		
+		if (g_receivedTemp != RxData[0])
 		{
-			receivedTemp = RxData[0];
-			
-			return PRO_LIN_TxHeaderData(7, RxData,1);
-			//return LIN_TxMessage(RxData, 1);
+			g_receivedTemp = RxData[0];
+			g_LIN_TempTx = true;
+			return HAL_OK;
 		}
 	}
 	return HAL_BUSY;

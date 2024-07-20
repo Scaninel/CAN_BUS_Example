@@ -14,14 +14,8 @@ void UsrLinRxProccess(void);
 void UsrLinTxProccess(void);
 
 extern uint8_t LIN_SingleData;
-extern volatile uint8_t g_LinHeaderRxCpltFlg;
-extern volatile uint8_t g_LinResponseRxCpltFlg;
-extern volatile uint8_t g_ButtonPressed;
-extern volatile uint32_t LinTxTimer;
-extern volatile uint32_t LinBusCheckTimer;
 extern uint8_t LinDataRxLenght;
 extern uint8_t LinRxBuf[LIN_BUFFER_LEN];
 
-extern uint8_t Received_Temp;
-
-extern volatile uint32_t g_LIN_Timeout;
+extern uint8_t g_Received_Temp;
+extern uint8_t g_Received_CanSt;

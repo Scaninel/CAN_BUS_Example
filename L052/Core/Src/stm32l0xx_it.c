@@ -151,7 +151,6 @@ void SysTick_Handler(void)
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
-	g_LIN_Timeout++;
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
@@ -192,7 +191,6 @@ void USART1_IRQHandler(void)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	UsrLIN_RxCallback();
-	g_LIN_Timeout = 0;
 }
 
 /* USER CODE END 1 */

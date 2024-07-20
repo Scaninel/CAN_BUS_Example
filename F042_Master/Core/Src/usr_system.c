@@ -15,16 +15,14 @@ void UsrSystemInit(void)
 	//HAL_HalfDuplex_EnableReceiver(&huart1);
 	//HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
 	
-	//HAL_TIM_Base_Start_IT(&htim16);
+	HAL_TIM_Base_Start_IT(&htim16);
 }
 
 uint8_t data = 15;
 void UsrSystemGeneral(void)
 {
-	//UsrLinTxProccess();
-	//UsrLinRxProccess();
-	
-	stat = CAN_DataCheck();
+	CAN_DataCheck();
+	LINProc();
 	
 //	PRO_LIN_TxHeaderData(7, &data,1);
 //	data++;
