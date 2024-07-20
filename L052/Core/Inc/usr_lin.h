@@ -13,7 +13,7 @@ void UsrDelay(const uint32_t timeout);
 void UsrLinRxProccess(void);
 void UsrLinTxProccess(void);
 
-extern uint8_t LIN_SingleData;
+extern uint8_t LIN_SingleData[8];
 extern uint8_t LinDataRxLenght;
 extern uint8_t LinRxBuf[LIN_BUFFER_LEN];
 

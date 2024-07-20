@@ -16,7 +16,7 @@
 #define LIN_TEMP_RS_ID 	87
 #define LIN_CAN_ST_ID 	55
 
-uint8_t LIN_SingleData;
+uint8_t LIN_SingleData[8];
 uint8_t LinDataRxLenght;
 
 uint8_t LinRxBuf[LIN_BUFFER_LEN];
@@ -35,7 +35,7 @@ void UsrLinRxProccess(void)
 {
 	if(LIN_HeaderReceived == true)
 	{
-		if (LinDataRxLenght >= 4 && (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)))
+		if (LinDataRxLenght > 4 && (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)))
 		{
 				LIN_HeaderReceived = false;
 			__HAL_UART_CLEAR_IDLEFLAG(&huart1);
@@ -46,21 +46,22 @@ void UsrLinRxProccess(void)
 			if(f_RxCrc != f_CalCrc)
 				return;
 			
-			if (LIN_TEMP_WR_ID == LinRxBuf[3])
+			if (LinRxBuf[3] == LIN_TEMP_WR_ID)
 			{
 				g_Received_Temp = LinRxBuf[4];
 			}
-			else if (LIN_TEMP_R_ID == LinRxBuf[3])
-			{
-				PRO_LIN_TxHeaderData(LIN_TEMP_RS_ID, &writtenTemp, 1);
-			}
-			else if(LIN_CAN_ST_ID == LinRxBuf[3])
+			else if(LinRxBuf[3] == LIN_CAN_ST_ID)
 			{
 				g_Received_CanSt = LinRxBuf[4];
 			}
-			
+//			else if (LIN_TEMP_R_ID == LinRxBuf[3])
+//			{
+//				PRO_LIN_TxHeaderData(LIN_TEMP_RS_ID, &writtenTemp, 1);
+//			}
+
 			LinDataRxLenght = 0;
 			memset(LinRxBuf, 0, sizeof(LinRxBuf));
+			memset(LIN_SingleData,0, sizeof(LIN_SingleData));
 		}
 	}
 	else if (LIN_HeaderReceived == false && LinDataRxLenght && (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)))
@@ -68,29 +69,31 @@ void UsrLinRxProccess(void)
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 		LinDataRxLenght = 0;
 		memset(LinRxBuf, 0, sizeof(LinRxBuf));
+		memset(LIN_SingleData,0, sizeof(LIN_SingleData));
 	}
 }
 
 void UsrLIN_RxCallback(void)
 {
-	LinRxBuf[LinDataRxLenght++] = LIN_SingleData;
+	memcpy(&LinRxBuf[LinDataRxLenght], LIN_SingleData, 8);
+	
+	LinDataRxLenght += 8; 
 
-	if(LinDataRxLenght == 4)
+	if(LIN_SYNC_BREAK_1 == LinRxBuf[0] && LIN_SYNC_BREAK_2 == LinRxBuf[1] && LIN_SYNC_FIELD == LinRxBuf[2])	
 	{
-		if(LIN_SYNC_BREAK_1 == LinRxBuf[0] && LIN_SYNC_BREAK_2 == LinRxBuf[1] && LIN_SYNC_FIELD == LinRxBuf[2])	
-		{
-			LIN_HeaderReceived = true;
-		}
-		else
-		{
-			LinDataRxLenght = 0;
-			memset(LinRxBuf, 0, sizeof(LinRxBuf));
-			LIN_HeaderReceived = false;
-		}
+		LIN_HeaderReceived = true;
 	}
+	else
+	{
+		LinDataRxLenght = 0;
+		memset(LinRxBuf, 0, sizeof(LinRxBuf));
+		memset(LIN_SingleData,0, sizeof(LIN_SingleData));
+		LIN_HeaderReceived = false;
+	}
+	
 
 	HAL_HalfDuplex_EnableReceiver(&huart1);
-	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
+	HAL_UART_Receive_IT(&huart1,LIN_SingleData,8);
 }
 
 uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len)
@@ -115,58 +118,61 @@ uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len)
 	return crc;
 }
 
-HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t data_length)
-{
-	HAL_StatusTypeDef f_TxStat = HAL_ERROR;
-	
-	uint8_t f_header [LIN_HEADER_LEN] = {0};
-	
-	f_header[0]= LIN_SYNC_BREAK_1;
-	f_header[1]= LIN_SYNC_BREAK_2;
-	f_header[2]= LIN_SYNC_FIELD;
-	f_header[3]= id;
-	
-	uint8_t *f_TxBuf = malloc(LIN_HEADER_LEN + data_length + 1);
-	
-	if(f_TxBuf == NULL)
-		return HAL_ERROR;
-	
-	memcpy(f_TxBuf, f_header, LIN_HEADER_LEN);
-	memcpy(&f_TxBuf[LIN_HEADER_LEN], data, data_length);
-	
-	f_TxBuf[LIN_HEADER_LEN + data_length] = CalculateLINCrc(data, data_length);
-	
-	HAL_HalfDuplex_EnableTransmitter(&huart1);
-	
-	f_TxStat = HAL_UART_Transmit(&huart1, f_TxBuf, LIN_HEADER_LEN + data_length + 1, 1000);
-	
-	HAL_HalfDuplex_EnableReceiver(&huart1);
-	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
-	free(f_TxBuf);
-	
-	return f_TxStat;
-}
+//HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t data_length)
+//{
+//	HAL_StatusTypeDef f_TxStat = HAL_ERROR;
+//	
+//	uint8_t f_header [LIN_HEADER_LEN] = {0};
+//	
+//	f_header[0]= LIN_SYNC_BREAK_1;
+//	f_header[1]= LIN_SYNC_BREAK_2;
+//	f_header[2]= LIN_SYNC_FIELD;
+//	f_header[3]= id;
+//	
+//	uint8_t *f_TxBuf = malloc(LIN_HEADER_LEN + data_length + 1);
+//	
+//	if(f_TxBuf == NULL)
+//		return HAL_ERROR;
+//	
+//	memcpy(f_TxBuf, f_header, LIN_HEADER_LEN);
+//	memcpy(&f_TxBuf[LIN_HEADER_LEN], data, data_length);
+//	
+//	f_TxBuf[LIN_HEADER_LEN + data_length] = CalculateLINCrc(data, data_length);
+//	
+//	HAL_HalfDuplex_EnableTransmitter(&huart1);
+//	
+//	f_TxStat = HAL_UART_Transmit(&huart1, f_TxBuf, LIN_HEADER_LEN + data_length + 1, 1000);
+//	
+//	HAL_HalfDuplex_EnableReceiver(&huart1);
+//	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
+//	free(f_TxBuf);
+//	
+//	return f_TxStat;
+//}
 
-HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id)
-{
-	HAL_StatusTypeDef f_TxStat = HAL_ERROR;
-	
-	uint8_t f_header [LIN_HEADER_LEN] = {0};
-	
-	f_header[0]= 0x00;
-	f_header[1]= 0x80;
-	f_header[2]= 0x55;
-	f_header[3]= id;
-	
-	HAL_HalfDuplex_EnableTransmitter(&huart1);
-	
-	f_TxStat = HAL_UART_Transmit(&huart1, f_header, LIN_HEADER_LEN, 1000);
-	
-	HAL_HalfDuplex_EnableReceiver(&huart1);
-	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
-	
-	return f_TxStat;
-}
+//HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id)
+//{
+//	HAL_StatusTypeDef f_TxStat = HAL_ERROR;
+//	
+//	uint8_t f_header [LIN_HEADER_LEN] = {0};
+//	
+//	f_header[0]= 0x00;
+//	f_header[1]= 0x80;
+//	f_header[2]= 0x55;
+//	f_header[3]= id;
+//	
+//	HAL_HalfDuplex_EnableTransmitter(&huart1);
+//	
+//	f_TxStat = HAL_UART_Transmit(&huart1, f_header, LIN_HEADER_LEN, 1000);
+//	
+//	HAL_HalfDuplex_EnableReceiver(&huart1);
+//	HAL_UART_Receive_IT(&huart1,&LIN_SingleData,1);
+//	
+//	return f_TxStat;
+//}
+
+
+
 
 
 

@@ -44,10 +44,7 @@ HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t 
 	f_header[2]= LIN_SYNC_FIELD;
 	f_header[3]= id;
 	
-	uint8_t *f_TxBuf = malloc(LIN_HEADER_LEN + data_length + 1);
-	
-	if(f_TxBuf == NULL)
-		return HAL_ERROR;
+	uint8_t f_TxBuf [8]= {0};
 	
 	memcpy(f_TxBuf, f_header, LIN_HEADER_LEN);
 	memcpy(&f_TxBuf[LIN_HEADER_LEN], data, data_length);
@@ -56,12 +53,11 @@ HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t 
 	
 	HAL_HalfDuplex_EnableTransmitter(&huart1);
 	
-	f_TxStat = HAL_UART_Transmit(&huart1, f_TxBuf, LIN_HEADER_LEN + data_length + 1, 1000);
+	f_TxStat = HAL_UART_Transmit(&huart1, f_TxBuf, LIN_HEADER_LEN + 4, 1000);
 	
 	HAL_HalfDuplex_EnableReceiver(&huart1);
-	free(f_TxBuf);
 	
-	HAL_Delay(500);
+	HAL_Delay(1000);
 	
 	return f_TxStat;
 }
