@@ -6,7 +6,7 @@ volatile uint32_t systemTimer;
 void UsrSystemInit(void)
 {
 	HAL_HalfDuplex_EnableReceiver(&huart1);
-	HAL_UART_Receive_IT(&huart1,LIN_SingleData,8);
+	HAL_UART_Receive_IT(&huart1,LIN_SingleData,4);
 	
 	HAL_TIM_Base_Start_IT(&htim6);
 	__HAL_UART_CLEAR_IDLEFLAG(&huart1);

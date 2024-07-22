@@ -16,7 +16,7 @@
 #define LIN_TEMP_RS_ID 	87
 #define LIN_CAN_ST_ID 	55
 
-uint8_t LIN_SingleData[8];
+uint8_t LIN_SingleData[4];
 uint8_t LinDataRxLenght;
 
 uint8_t LinRxBuf[LIN_BUFFER_LEN];
@@ -29,7 +29,6 @@ HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id);
 volatile uint8_t LIN_HeaderReceived;
 uint8_t g_Received_Temp;
 uint8_t g_Received_CanSt = CAN_INIT;
-
 
 void UsrLinRxProccess(void)
 {
@@ -44,7 +43,12 @@ void UsrLinRxProccess(void)
 			uint8_t f_CalCrc = CalculateLINCrc(&LinRxBuf[4], 1);
 			
 			if(f_RxCrc != f_CalCrc)
+			{
+				LinDataRxLenght = 0;
+				memset(LinRxBuf, 0, sizeof(LinRxBuf));
+				memset(LIN_SingleData,0, sizeof(LIN_SingleData));
 				return;
+			}
 			
 			if (LinRxBuf[3] == LIN_TEMP_WR_ID)
 			{
@@ -75,25 +79,27 @@ void UsrLinRxProccess(void)
 
 void UsrLIN_RxCallback(void)
 {
-	memcpy(&LinRxBuf[LinDataRxLenght], LIN_SingleData, 8);
-	
-	LinDataRxLenght += 8; 
-
-	if(LIN_SYNC_BREAK_1 == LinRxBuf[0] && LIN_SYNC_BREAK_2 == LinRxBuf[1] && LIN_SYNC_FIELD == LinRxBuf[2])	
+	if(LIN_HeaderReceived == false)
 	{
 		LIN_HeaderReceived = true;
+		memcpy(&LinRxBuf[0], LIN_SingleData, 4);
+		
+		if((LinRxBuf[0] != LIN_SYNC_BREAK_1) || (LinRxBuf[1] != LIN_SYNC_BREAK_2) || (LinRxBuf[2] != LIN_SYNC_FIELD))
+		{
+			LinDataRxLenght=0;
+			memset(LinRxBuf, 0, sizeof(LinRxBuf));
+			memset(LIN_SingleData,0, sizeof(LIN_SingleData));
+			LIN_HeaderReceived = false;
+		}
 	}
 	else
 	{
-		LinDataRxLenght = 0;
-		memset(LinRxBuf, 0, sizeof(LinRxBuf));
-		memset(LIN_SingleData,0, sizeof(LIN_SingleData));
-		LIN_HeaderReceived = false;
+		memcpy(&LinRxBuf[4], LIN_SingleData, 4);
 	}
 	
-
+	LinDataRxLenght += 4;
 	HAL_HalfDuplex_EnableReceiver(&huart1);
-	HAL_UART_Receive_IT(&huart1,LIN_SingleData,8);
+	HAL_UART_Receive_IT(&huart1,LIN_SingleData,4);
 }
 
 uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len)
