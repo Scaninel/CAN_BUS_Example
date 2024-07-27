@@ -17,5 +17,6 @@ extern uint8_t LIN_SingleData[4];
 extern uint8_t LinDataRxLenght;
 extern uint8_t LinRxBuf[LIN_BUFFER_LEN];
 
+extern uint8_t g_LIN_TempRxFlg;
 extern uint8_t g_Received_Temp;
 extern uint8_t g_Received_CanSt;

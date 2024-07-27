@@ -63,7 +63,10 @@ void UpdateMainScreen(void)
 		
 		ssd1306_SetCursor(0, 20);
 		ssd1306_WriteString("Temp:",Font_7x10,White);
-		ssd1306_WriteString(str_writtenTemp,Font_7x10,White);
+		if(g_LIN_TempRxFlg)
+			ssd1306_WriteString(str_writtenTemp,Font_7x10,White);
+		else
+			ssd1306_WriteString("-",Font_7x10,White);
 		ssd1306_UpdateScreen();
 	}
 }

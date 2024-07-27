@@ -190,7 +190,7 @@ void CEC_CAN_IRQHandler(void)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-
+	UsrLIN_RxCallback();
 }
 
 

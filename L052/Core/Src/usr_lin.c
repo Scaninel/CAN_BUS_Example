@@ -13,20 +13,19 @@
 
 #define LIN_TEMP_WR_ID 	7
 #define LIN_TEMP_R_ID 	77
-#define LIN_TEMP_RS_ID 	87
 #define LIN_CAN_ST_ID 	55
-
-uint8_t LIN_SingleData[4];
-uint8_t LinDataRxLenght;
-
-uint8_t LinRxBuf[LIN_BUFFER_LEN];
 
 uint8_t RandomNumbersGeneration(uint32_t *aRandom32bit);
 uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len);
 HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t data_length);
 HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id);
 
+uint8_t LIN_SingleData[4];
+uint8_t LinDataRxLenght;
+uint8_t LinRxBuf[LIN_BUFFER_LEN];
 volatile uint8_t LIN_HeaderReceived;
+
+uint8_t g_LIN_TempRxFlg;
 uint8_t g_Received_Temp;
 uint8_t g_Received_CanSt = CAN_INIT;
 
@@ -52,16 +51,17 @@ void UsrLinRxProccess(void)
 			
 			if (LinRxBuf[3] == LIN_TEMP_WR_ID)
 			{
+				g_LIN_TempRxFlg = true;
 				g_Received_Temp = LinRxBuf[4];
 			}
 			else if(LinRxBuf[3] == LIN_CAN_ST_ID)
 			{
 				g_Received_CanSt = LinRxBuf[4];
 			}
-//			else if (LIN_TEMP_R_ID == LinRxBuf[3])
-//			{
-//				PRO_LIN_TxHeaderData(LIN_TEMP_RS_ID, &writtenTemp, 1);
-//			}
+			else if (LIN_TEMP_R_ID == LinRxBuf[3])
+			{
+				PRO_LIN_TxHeaderData(LIN_TEMP_R_ID, &writtenTemp, 1);
+			}
 
 			LinDataRxLenght = 0;
 			memset(LinRxBuf, 0, sizeof(LinRxBuf));
@@ -75,6 +75,57 @@ void UsrLinRxProccess(void)
 		memset(LinRxBuf, 0, sizeof(LinRxBuf));
 		memset(LIN_SingleData,0, sizeof(LIN_SingleData));
 	}
+}
+
+HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t data_length)
+{
+	HAL_StatusTypeDef f_TxStat = HAL_ERROR;
+	
+	uint8_t f_header [LIN_HEADER_LEN] = {0};
+	
+	f_header[0]= LIN_SYNC_BREAK_1;
+	f_header[1]= LIN_SYNC_BREAK_2;
+	f_header[2]= LIN_SYNC_FIELD;
+	f_header[3]= id;
+	
+	uint8_t f_TxBuf [8]= {0};
+	
+	memcpy(f_TxBuf, f_header, LIN_HEADER_LEN);
+	memcpy(&f_TxBuf[LIN_HEADER_LEN], data, data_length);
+	
+	f_TxBuf[LIN_HEADER_LEN + data_length] = CalculateLINCrc(data, data_length);
+	
+	HAL_HalfDuplex_EnableTransmitter(&huart1);
+	
+	f_TxStat = HAL_UART_Transmit(&huart1, f_TxBuf, LIN_HEADER_LEN + 4, 1000);
+	
+	HAL_HalfDuplex_EnableReceiver(&huart1);
+	
+	HAL_Delay(1000);
+	
+	return f_TxStat;
+}
+
+HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id)
+{
+	HAL_StatusTypeDef f_TxStat = HAL_ERROR;
+	
+	uint8_t f_header [LIN_HEADER_LEN] = {0};
+	
+	f_header[0]= 0x00;
+	f_header[1]= 0x80;
+	f_header[2]= 0x55;
+	f_header[3]= id;
+	
+	HAL_HalfDuplex_EnableTransmitter(&huart1);
+	
+	f_TxStat = HAL_UART_Transmit(&huart1, f_header, LIN_HEADER_LEN, 1000);
+	
+	HAL_HalfDuplex_EnableReceiver(&huart1);
+	
+	HAL_Delay(1000);
+	
+	return f_TxStat;
 }
 
 void UsrLIN_RxCallback(void)
