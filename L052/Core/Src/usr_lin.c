@@ -92,8 +92,6 @@ HAL_StatusTypeDef PRO_LIN_TxHeaderData(uint8_t id, const uint8_t *data, uint8_t 
 	
 	HAL_HalfDuplex_EnableReceiver(&huart1);
 	
-	HAL_Delay(1000);
-	
 	return f_TxStat;
 }
 
@@ -113,9 +111,7 @@ HAL_StatusTypeDef PRO_LIN_TxHeader(uint8_t id)
 	f_TxStat = HAL_UART_Transmit(&huart1, f_header, LIN_HEADER_LEN, 1000);
 	
 	HAL_HalfDuplex_EnableReceiver(&huart1);
-	
-	HAL_Delay(1000);
-	
+
 	return f_TxStat;
 }
 uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len)
