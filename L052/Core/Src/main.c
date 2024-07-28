@@ -59,7 +59,13 @@ static void MX_TIM6_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+	LinDataRxLenght = Size;
+	g_LIN_MsgReceived = true;
+	
+	HAL_UARTEx_ReceiveToIdle_IT(&huart1, LinRxBuf, 8);
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/

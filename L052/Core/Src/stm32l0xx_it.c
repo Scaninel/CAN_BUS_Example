@@ -181,18 +181,11 @@ void USART1_IRQHandler(void)
 
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
-	HAL_HalfDuplex_EnableReceiver(&huart1);
-	HAL_UART_Receive_IT(&huart1,LIN_SingleData,4);
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	UsrLIN_RxCallback();
-}
 
 /* USER CODE END 1 */

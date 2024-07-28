@@ -86,6 +86,14 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   }
 }
 
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+	LinDataRxLenght = Size;
+	g_LIN_MsgReceived = true;
+	
+	HAL_UARTEx_ReceiveToIdle_IT(&huart1, LinRxBuf, 8);
+}
+
 /* USER CODE END 0 */
 
 /**

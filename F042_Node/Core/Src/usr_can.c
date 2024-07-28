@@ -1,7 +1,7 @@
 #include "usr_system.h"
 #include "usr_lin.h"
 
-#define CAN_TX_PERIOD 5000
+#define CAN_TX_PERIOD 10000
 #define CAN_MAX_DATA_LENGTH 8
 
 CAN_TxHeaderTypeDef CAN_TxHeader;
