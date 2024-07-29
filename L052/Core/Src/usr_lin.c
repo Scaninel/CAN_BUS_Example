@@ -13,7 +13,7 @@
 
 #define LIN_TEMP_WR_ID 	7
 #define LIN_TEMP_R_ID 	77
-#define LIN_CAN_ST_ID 	55
+#define LIN_NTW_ST_ID 	55
 
 uint8_t RandomNumbersGeneration(uint32_t *aRandom32bit);
 uint8_t CalculateLINCrc(const uint8_t *f_p, uint8_t f_len);
@@ -26,7 +26,8 @@ volatile uint8_t g_LIN_MsgReceived;
 
 uint8_t g_LIN_TempRxFlg;
 uint8_t g_Received_Temp;
-uint8_t g_Received_CanSt = CAN_INIT;
+uint8_t g_Received_CanSt = NTW_INIT;
+uint8_t g_Received_LinSt = NTW_INIT;
 
 void UsrLinRxProccess(void)
 {
@@ -51,8 +52,9 @@ void UsrLinRxProccess(void)
 				g_Received_Temp = LinRxBuf[4];
 				break;
 
-			case LIN_CAN_ST_ID:
-				g_Received_CanSt = LinRxBuf[4];
+			case LIN_NTW_ST_ID:
+				g_Received_CanSt = (LinRxBuf[4] & NTW_CAN_BIT) != 0;
+				g_Received_LinSt = (LinRxBuf[4] & NTW_LIN_BIT) != 0;
 				break;
 
 			case LIN_TEMP_R_ID:

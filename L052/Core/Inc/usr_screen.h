@@ -1,8 +1,8 @@
 #include "main.h"
 
-#define CAN_ON   1
-#define CAN_OFF  0
-#define CAN_INIT 2
+#define NTW_ON   1
+#define NTW_OFF  0
+#define NTW_INIT 2
 
 void UsrScreenInit(void);
 void SetMainScreen(void);

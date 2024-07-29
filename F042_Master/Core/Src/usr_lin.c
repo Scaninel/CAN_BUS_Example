@@ -13,7 +13,7 @@
 
 #define LIN_TEMP_WR_ID 	7
 #define LIN_TEMP_R_ID 	77
-#define LIN_CAN_ST_ID 	55
+#define LIN_NTW_ST_ID 	55
 
 #define LIN_STAT_CHECK_TIME (!(systemTimer % 10000))
 
@@ -34,10 +34,10 @@ void LINProc(void)
 		PRO_LIN_TxHeaderData(LIN_TEMP_WR_ID, &g_receivedTemp, 1);
 	}
 	
-	if(g_LIN_CanStTx)
+	if(g_NetworkStTx)
 	{
-		g_LIN_CanStTx = false;
-		PRO_LIN_TxHeaderData(LIN_CAN_ST_ID, &g_CanSt, 1);
+		g_NetworkStTx = false;
+		PRO_LIN_TxHeaderData(LIN_NTW_ST_ID, &g_NetworkSt, 1);
 	}
 	
 	if(LIN_STAT_CHECK_TIME)
@@ -121,9 +121,9 @@ void UsrLinRxProccess(void)
 		{
 			case LIN_TEMP_R_ID:
 				if(g_receivedTemp != LinRxBuf[4])
-					g_LinSt = false;
+					g_NetworkSt &= ~NTW_LIN_BIT;
 				else
-					g_LinSt = true;
+					g_NetworkSt |= NTW_LIN_BIT;
 				break;
 				
 			default:
