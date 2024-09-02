@@ -4,6 +4,9 @@
 #define NTW_CAN_BIT (1 << 0)
 #define NTW_LIN_BIT (1 << 1)
 
+#define CAN_TEMP_ID 11
+#define CAN_REF_SPEED_ID 22
+
 //HAL_StatusTypeDef UsrCanTxProccess(void);
 
 extern CAN_RxHeaderTypeDef RxHeader;

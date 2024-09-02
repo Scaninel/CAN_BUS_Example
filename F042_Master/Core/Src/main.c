@@ -79,7 +79,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     Error_Handler();
   }
 
-  if ((RxHeader.StdId == 0x103))
+  if ((RxHeader.StdId == CAN_TEMP_ID) || (RxHeader.StdId == CAN_REF_SPEED_ID))
   {
 		g_CANstat = true;
 	  g_CAN_DataReceived = 1;

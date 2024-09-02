@@ -37,7 +37,7 @@ HAL_StatusTypeDef CAN_DataCheck(void)
 		g_NetworkStTx = true;
 		g_NetworkSt |= NTW_CAN_BIT;
 		
-		if (g_receivedTemp != RxData[0])
+		if ((RxHeader.StdId == CAN_TEMP_ID) && (g_receivedTemp != RxData[0]))
 		{
 			g_receivedTemp = RxData[0];
 			g_LIN_TempTx = true;
