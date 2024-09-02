@@ -5,10 +5,15 @@
 volatile uint32_t systemTimer;
 volatile uint8_t g_ADC_ValReady;
 
-uint32_t adcValues[3];
+uint32_t adcValues[4];
 double temperatureVolt;
 uint8_t temperatureCe;
 HAL_StatusTypeDef CAN_RxStat = HAL_ERROR;
+
+uint8_t DutyCycle;
+uint8_t DutyCycleSent;
+uint8_t motorEnbl;
+uint8_t motorEnblSent;
 
 void LedBlink(void);
 
@@ -22,7 +27,7 @@ void UsrSystemInit(void)
 	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
 	HAL_CAN_Start(&hcan);
 	
-	HAL_ADC_Start_DMA(&hadc, adcValues, 3);
+	HAL_ADC_Start_DMA(&hadc, adcValues, 4);
 }
 
 void UsrSystemGeneral(void)
@@ -31,11 +36,23 @@ void UsrSystemGeneral(void)
 	{
 		g_ADC_ValReady = false;
 		
-		temperatureVolt = adcValues[0] * 3.3 / 4096;
+		DutyCycle = (uint8_t)((adcValues[0] * 3.3 / 4096) * 100 /3.3);
+		
+		if((DutyCycle != DutyCycleSent) || (motorEnbl != motorEnblSent))
+		{
+			uint8_t motorStatBuf[2]={DutyCycle, motorEnbl};
+			if(!UsrCanRefSpeedTxProccess(motorStatBuf, 2))
+			{
+				DutyCycleSent = DutyCycle;
+				motorEnblSent = motorEnbl;
+				LedBlink();
+			}
+		}
+		
+		temperatureVolt = adcValues[1] * 3.3 / 4096;
 		temperatureCe = (uint8_t)(temperatureVolt * 100);
 		
-		CAN_RxStat = UsrCanTxProccess(&temperatureCe, sizeof(temperatureCe));
-		if(CAN_RxStat == HAL_OK)
+		if(!UsrCanTempTxProccess(&temperatureCe, sizeof(temperatureCe)))
 		{
 			LedBlink();
 		}
