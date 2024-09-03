@@ -16,6 +16,8 @@ void UsrSystemInit(void)
 	HAL_UARTEx_ReceiveToIdle_IT(&huart1, LinRxBuf, 8);
 	
 	HAL_TIM_Base_Start_IT(&htim16);
+	
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
 }
 
 uint8_t data = 15;

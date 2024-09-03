@@ -43,6 +43,11 @@ HAL_StatusTypeDef CAN_DataCheck(void)
 			g_LIN_TempTx = true;
 			return HAL_OK;
 		}
+		else if(RxHeader.StdId == CAN_REF_SPEED_ID)
+		{
+			TIM3->CCR3 = RxData[0];
+			RxData[1] ? HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET):HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
+		}
 	}
 	return HAL_BUSY;
 }

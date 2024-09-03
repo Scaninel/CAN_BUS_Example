@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -66,6 +68,7 @@ extern CAN_HandleTypeDef hcan;
 extern CRC_HandleTypeDef hcrc;
 extern volatile uint32_t systemTimer;
 extern TIM_HandleTypeDef htim16;
+extern TIM_HandleTypeDef htim3;
 
 /* USER CODE END Private defines */
 
