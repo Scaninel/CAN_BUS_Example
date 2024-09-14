@@ -2,6 +2,8 @@
 
 #define true 1
 #define false 0
+	
+#define MAX_MOTOR_SPEED 10000
 
 void UsrSystemInit(void);
 void UsrSystemGeneral(void);

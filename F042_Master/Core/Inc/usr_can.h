@@ -22,4 +22,7 @@ extern uint8_t g_NetworkStTx;
 extern uint8_t g_NetworkSt;
 extern uint8_t g_receivedTemp;
 
+extern uint16_t g_rpmRequest;
+extern uint8_t g_motorEnbl;
+
 HAL_StatusTypeDef CAN_DataCheck(void);

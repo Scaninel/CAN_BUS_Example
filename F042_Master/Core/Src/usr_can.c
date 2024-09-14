@@ -18,6 +18,8 @@ uint8_t g_NetworkStTx;
 
 uint8_t g_NetworkSt;
 uint8_t g_receivedTemp;
+uint16_t g_rpmRequest;
+uint8_t g_motorEnbl;
 
 HAL_StatusTypeDef CAN_DataCheck(void)
 {
@@ -45,8 +47,10 @@ HAL_StatusTypeDef CAN_DataCheck(void)
 		}
 		else if(RxHeader.StdId == CAN_REF_SPEED_ID)
 		{
-			TIM3->CCR3 = RxData[0];
-			RxData[1] ? HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET):HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
+			g_rpmRequest = MAX_MOTOR_SPEED * RxData[0] / 100;
+			g_motorEnbl = RxData[1];
+			
+			g_motorEnbl ? HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET): HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
 		}
 	}
 	return HAL_BUSY;
