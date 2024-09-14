@@ -69,6 +69,7 @@ extern CRC_HandleTypeDef hcrc;
 extern volatile uint32_t systemTimer;
 extern TIM_HandleTypeDef htim16;
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim2;
 
 /* USER CODE END Private defines */
 

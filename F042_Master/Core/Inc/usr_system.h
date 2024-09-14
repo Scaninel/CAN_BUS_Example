@@ -10,3 +10,4 @@ extern uint8_t g_mcuTemp;
 extern int datacheck;
 extern uint8_t g_mcuTemp;
 extern volatile uint32_t systemTimer;
+extern volatile uint8_t captureDone;
