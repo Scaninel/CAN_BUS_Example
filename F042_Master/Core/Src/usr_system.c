@@ -12,18 +12,20 @@ volatile uint32_t systemTimer;
 HAL_StatusTypeDef stat;
 
 uint32_t ICValue;
-double frequency;
-double rpmMeasured;
+float frequency;
+float g_rpmMeasured;
 volatile uint8_t captureDone;
 
-double error, control, prevError;
+float error, control, prevError;
 
-double Kp = 0.01229555110361;
-double Ki = 0.686283392874;
-double Kd = 3.730893251148e-05;
+float Kp = 0.01229555110361;
+float Ki = 0.686283392874;
+float Kd = 3.730893251148e-05;
 
-double integral;
-double prevMeasured;
+float integral;
+float prevMeasured;
+
+void MotorControlProc(void);
 
 void UsrSystemInit(void)
 {
@@ -44,20 +46,24 @@ void UsrSystemGeneral(void)
 {
 	CAN_DataCheck();
 	LINProc();
-	
+	MotorControlProc();
+}
+
+void MotorControlProc(void)
+{
 	if (captureDone)  // Check if a new capture is done
 	{
 		if (ICValue != 0)
 		{
 			frequency = 1000000.0 / ICValue;  // Calculate the frequency
 			captureDone = 0;  // Reset the flag for the next capture
-			rpmMeasured = frequency*60/PPR;
+			g_rpmMeasured = frequency*60/PPR;
 		}
 	}
 	
 	if(!(systemTimer % PID_TASK_SAMPLE_TIME_MS))
 	{
-		error = g_rpmRequest - rpmMeasured;
+		error = g_rpmRequest - g_rpmMeasured;
 	
 		if(g_motorEnbl)
 		{
@@ -67,15 +73,14 @@ void UsrSystemGeneral(void)
 			else if (integral < 0) integral = 0;
 			
 			// Derivative term
-      double derivative = (rpmMeasured - prevMeasured) / PID_TASK_SAMPLE_TIME_S;
+      double derivative = (g_rpmMeasured - prevMeasured) / PID_TASK_SAMPLE_TIME_S;
 			
 			// PID control output
 			control = Kp * error + integral - Kd * derivative;
 
 			// Store current error and measurement for next iteration
 			prevError = error;
-			prevMeasured = rpmMeasured;
-
+			prevMeasured = g_rpmMeasured;
 		}
 		else
 		{
@@ -85,24 +90,13 @@ void UsrSystemGeneral(void)
 			prevMeasured = 0;
 		}
 
-		// Clamp control output
+		// Control output limit
 		if (control > 100)
 			control = 100;
 		else if (control < 0)
 			control = 0;
-			
+		
+		// Assign dutyc cycle for the PWM output
 		TIM3->CCR3 = control;
 	}
-	
-	
-
-	
-	
-	
-	
-//	PRO_LIN_TxHeaderData(7, &data,1);
-//	data++;
-//	HAL_Delay(2000);
-//	PRO_LIN_TxHeader(77);
-//	HAL_Delay(5000);
 }
