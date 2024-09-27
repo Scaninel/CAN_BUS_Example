@@ -14,6 +14,18 @@
 #define LIN_TEMP_WR_ID 	7
 #define LIN_TEMP_R_ID 	77
 #define LIN_NTW_ST_ID 	55
+#define LIN_RPM_WR 			99
+
+typedef union U_CONVERTER_TAG
+{
+    uint8_t buf[4];
+    uint16_t u16val;
+    uint32_t uival;
+    int32_t i32val;
+    uint32_t ui32val;
+    int32_t ival;
+    float fval;
+}U_CONVERTER;
 
 void ClearLinBuf(void);
 uint8_t RandomNumbersGeneration(uint32_t *aRandom32bit);
@@ -31,9 +43,13 @@ uint8_t g_Received_Temp;
 uint8_t g_Received_CanSt = NTW_INIT;
 uint8_t g_Received_LinSt = NTW_INIT;
 
+float g_Received_rpm;
+
 uint8_t g_LinSingleMsg;
 uint8_t LinHeaderReceived;
 volatile uint8_t g_LinIdle;
+
+U_CONVERTER uConvert;
 
 void UsrLinRxProccess(void)
 {
@@ -67,6 +83,11 @@ void UsrLinRxProccess(void)
 				case LIN_NTW_ST_ID:
 					g_Received_CanSt = (LinRxBuf[4] & NTW_CAN_BIT) != 0;
 					g_Received_LinSt = (LinRxBuf[4] & NTW_LIN_BIT) != 0;
+					break;
+				
+				case LIN_RPM_WR:
+					memcpy(uConvert.buf, &LinRxBuf[4], 4);
+					g_Received_rpm = uConvert.fval;	
 					break;
 
 				default:

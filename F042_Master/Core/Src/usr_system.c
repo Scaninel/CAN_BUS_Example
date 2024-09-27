@@ -32,8 +32,8 @@ void UsrSystemInit(void)
   HAL_CAN_Start(&hcan);
 	HAL_CAN_ActivateNotification(&hcan,CAN_IT_RX_FIFO0_MSG_PENDING);
 	
-	HAL_HalfDuplex_EnableReceiver(&huart1);
-	HAL_UARTEx_ReceiveToIdle_IT(&huart1, LinRxBuf, 8);
+//	HAL_HalfDuplex_EnableReceiver(&huart1);
+//	HAL_UART_Receive_IT(&huart1, &g_LinSingleMsg, 1);
 	
 	HAL_TIM_Base_Start_IT(&htim16);
 	

@@ -92,14 +92,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   }
 }
 
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
-{
-	LinDataRxLenght = Size;
-	g_LIN_MsgReceived = true;
-	
-	HAL_UARTEx_ReceiveToIdle_IT(&huart1, LinRxBuf, 8);
-}
-
 /* USER CODE END 0 */
 
 /**
@@ -510,7 +502,10 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-
+	
+	// Enable the IDLE line detection interrupt
+    __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
+	
   /* USER CODE END USART1_Init 2 */
 
 }

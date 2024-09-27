@@ -179,6 +179,12 @@ void TIM16_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
+	if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
+	{
+		// IDLE line detected
+		__HAL_UART_CLEAR_IDLEFLAG(&huart1); // Clear the IDLE flag
+		g_LinIdle = true;
+	}
 
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
@@ -212,11 +218,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim->Instance == TIM2)
-    {
-        // Set captureDone flag to indicate a new value is ready
-			TIM2->CNT = 0;
-      captureDone = 1;
-    }
+	if (htim->Instance == TIM2)
+	{
+			// Set captureDone flag to indicate a new value is ready
+		TIM2->CNT = 0;
+		captureDone = 1;
+	}
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART1)
+  {
+    UsrLinRxCallback();
+  }
 }
 /* USER CODE END 1 */

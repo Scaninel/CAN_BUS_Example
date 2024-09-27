@@ -9,7 +9,8 @@ void initialScreenMessage(char *msg);
 
 uint8_t writtenCanStat = NTW_INIT;
 uint8_t writtenLinStat = NTW_INIT;
-uint8_t writtenTemp = 0;
+uint8_t writtenTemp;
+uint32_t writtenRpm;
 
 void UsrScreenInit(void)
 {
@@ -40,12 +41,13 @@ void SetMainScreen(void)
 
 void UpdateMainScreen(void)
 {
-	if((writtenTemp != g_Received_Temp) || (writtenCanStat != g_Received_CanSt) || (writtenLinStat != g_Received_LinSt))
+	if((writtenTemp != g_Received_Temp) || (writtenCanStat != g_Received_CanSt) || (writtenLinStat != g_Received_LinSt) || (writtenRpm != g_Received_rpm))
 	{
 		ssd1306_Fill(Black);
 		writtenTemp = g_Received_Temp;
 		writtenCanStat = g_Received_CanSt;
 		writtenLinStat = g_Received_LinSt;
+		writtenRpm = (uint32_t)g_Received_rpm;
 		ssd1306_SetCursor(0, 0);
 
 		if (writtenCanStat == NTW_ON)
@@ -71,6 +73,13 @@ void UpdateMainScreen(void)
 			ssd1306_WriteString(str_writtenTemp,Font_7x10,White);
 		else
 			ssd1306_WriteString("-",Font_7x10,White);
+		
+		char str_writtenRpm[10];
+		sprintf(str_writtenRpm, "%d", writtenRpm);
+		ssd1306_SetCursor(0, 30);
+		ssd1306_WriteString("Rpm:",Font_7x10,White);
+		ssd1306_WriteString(str_writtenRpm,Font_7x10,White);
+
 		ssd1306_UpdateScreen();
 	}
 }
