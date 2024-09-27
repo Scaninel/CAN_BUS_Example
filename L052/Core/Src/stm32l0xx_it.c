@@ -178,6 +178,12 @@ void TIM22_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
+	if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
+    {
+     // IDLE line detected
+        __HAL_UART_CLEAR_IDLEFLAG(&huart1); // Clear the IDLE flag
+			g_LinIdle = true;
+    }
 
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
@@ -188,4 +194,11 @@ void USART1_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART1)
+  {
+    UsrLinRxCallback();
+  }
+}
 /* USER CODE END 1 */
