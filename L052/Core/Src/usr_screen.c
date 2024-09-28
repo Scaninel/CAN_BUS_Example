@@ -74,11 +74,11 @@ void UpdateMainScreen(void)
 		else
 			ssd1306_WriteString("-",Font_7x10,White);
 		
-		char str_writtenRpm[10];
-		sprintf(str_writtenRpm, "%d", writtenRpm);
-		ssd1306_SetCursor(0, 30);
-		ssd1306_WriteString("Rpm:",Font_7x10,White);
-		ssd1306_WriteString(str_writtenRpm,Font_7x10,White);
+//		char str_writtenRpm[10];
+//		sprintf(str_writtenRpm, "%d", writtenRpm);
+//		ssd1306_SetCursor(0, 30);
+//		ssd1306_WriteString("Rpm:",Font_7x10,White);
+//		ssd1306_WriteString(str_writtenRpm,Font_7x10,White);
 
 		ssd1306_UpdateScreen();
 	}

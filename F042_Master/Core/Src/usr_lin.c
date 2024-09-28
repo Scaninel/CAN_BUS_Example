@@ -59,14 +59,14 @@ void LINProc(void)
 			PRO_LIN_TxHeaderData(LIN_NTW_ST_ID, &g_NetworkSt, 1);
 		}
 		
-		if(LIN_RPM_TX_TIME)
-		{
-			U_CONVERTER uConvert;
-			
-			uConvert.fval= g_rpmMeasured;
-			
-			PRO_LIN_TxHeaderData(LIN_RPM_WR, uConvert.buf, 4);
-		}
+//		if(LIN_RPM_TX_TIME)
+//		{
+//			U_CONVERTER uConvert;
+//			
+//			uConvert.fval= g_rpmMeasured;
+//			
+//			PRO_LIN_TxHeaderData(LIN_RPM_WR, uConvert.buf, 4);
+//		}
 	}
 
 	if(LIN_STAT_CHECK_TIME)
