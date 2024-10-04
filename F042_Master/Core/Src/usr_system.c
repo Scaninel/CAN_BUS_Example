@@ -76,7 +76,7 @@ void MotorControlProc(void)
       double derivative = (g_rpmMeasured - prevMeasured) / PID_TASK_SAMPLE_TIME_S;
 			
 			// PID control output
-			control = Kp * error + integral - Kd * derivative;
+			control = Kp * error + integral + Kd * derivative;
 
 			// Store current error and measurement for next iteration
 			prevError = error;
