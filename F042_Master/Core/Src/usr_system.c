@@ -73,7 +73,7 @@ void MotorControlProc(void)
 			else if (integral < 0) integral = 0;
 			
 			// Derivative term
-      double derivative = (g_rpmMeasured - prevMeasured) / PID_TASK_SAMPLE_TIME_S;
+      double derivative = (error - prevError) / PID_TASK_SAMPLE_TIME_S;
 			
 			// PID control output
 			control = Kp * error + integral + Kd * derivative;
