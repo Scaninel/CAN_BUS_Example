@@ -35,5 +35,6 @@ extern uint8_t g_Received_CanSt;
 extern uint8_t g_Received_LinSt;
 extern float g_Received_rpm;
 
+void LinLoop(void);
 
 #endif /* INC_USR_LIN_H_ */

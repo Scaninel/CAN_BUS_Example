@@ -37,7 +37,7 @@ typedef union U_CONVERTER_TAG
 
 U_CONVERTER uConvert;
 
-void UsrLinRxProccess(void)
+void LinLoop(void)
 {
 	if (g_LinIdle == true && LinHeaderReceived == true)
 	{

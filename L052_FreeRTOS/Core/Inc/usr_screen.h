@@ -8,7 +8,8 @@
 #ifndef INC_USR_SCREEN_H_
 #define INC_USR_SCREEN_H_
 
-void UsrScreenInit(void);
+void ScreenInit(void);
+void ScreenLoop(void);
 
 extern uint8_t writtenTemp;
 

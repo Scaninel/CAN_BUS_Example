@@ -16,7 +16,7 @@ uint8_t writtenLinStat = NTW_INIT;
 uint8_t writtenTemp;
 uint32_t writtenRpm;
 
-void UsrScreenInit(void)
+void ScreenInit(void)
 {
 	ssd1306_Init();
 
@@ -35,7 +35,7 @@ void UsrScreenInit(void)
 	ssd1306_UpdateScreen();
 }
 
-void UserScreenLoop(void)
+void ScreenLoop(void)
 {
 	if((writtenTemp != g_Received_Temp) || (writtenCanStat != g_Received_CanSt) || (writtenLinStat != g_Received_LinSt) || (writtenRpm != g_Received_rpm))
 	{
