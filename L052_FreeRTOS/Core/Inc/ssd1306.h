@@ -117,7 +117,6 @@ void ssd1306_Startscrolldiagleft(uint8_t start, uint8_t stop);
 void ssd1306_Stopscroll(void);
 void ssd1306_Dim(uint8_t dim);
 void ssd1306_draw_rectangle(uint8_t x1, uint8_t x2, uint8_t y1, uint8_t y2, SSD1306_COLOR c);
-void ssd1306_line_v(uint8_t y0, uint8_t y1, uint8_t x, uint8_t width, SSD1306_COLOR c);
 void ssd1306_line_h(uint8_t x0, uint8_t x1, uint8_t y0, uint8_t width, SSD1306_COLOR c);
 void ssd1306_draw_bitmap(uint8_t left, uint8_t top, const unsigned char *bitmap);
 void ssd1306_draw_line( unsigned char x1, unsigned char y1,

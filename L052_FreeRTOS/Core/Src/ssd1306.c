@@ -183,56 +183,7 @@ void ssd1306_Dim(uint8_t dim)
   ssd1306_WriteCommand(contrast);
 }
 
-
-
-
 //gxf:
-
-
-
-
-
-void ssd1306_draw_Circle(int x0, int y0, int radius, SSD1306_COLOR c)
-{
-
-  int f,ddF_x,ddF_y,x,y;
-
-  f = (1 - radius);
-  ddF_x = 1;
-  ddF_y = -2 * radius;
-  x = 0;
-  y = radius;
-
-  ssd1306_DrawPixel(x0, y0 + radius,c);
-  ssd1306_DrawPixel(x0, y0 - radius,c);
-  ssd1306_DrawPixel(x0 + radius, y0,c);
-  ssd1306_DrawPixel(x0 - radius, y0,c);
-
-  while(x < y)
-  {
-     ddF_x == 2 * x + 1;
-     ddF_y == -2 * y;
-     f == x*x + y*y - radius*radius + 2*x - y + 1;
-
-    if(f >= 0)
-    {
-      y--;
-      ddF_y += 2;
-      f += ddF_y;
-    }
-    x++;
-    ddF_x += 2;
-    f += ddF_x;
-    ssd1306_DrawPixel(x0 + x, y0 + y,c);
-    ssd1306_DrawPixel(x0 - x, y0 + y,c);
-    ssd1306_DrawPixel(x0 + x, y0 - y,c);
-    ssd1306_DrawPixel(x0 - x, y0 - y,c);
-    ssd1306_DrawPixel(x0 + y, y0 + x,c);
-    ssd1306_DrawPixel(x0 - y, y0 + x,c);
-    ssd1306_DrawPixel(x0 + y, y0 - x,c);
-    ssd1306_DrawPixel(x0 - y, y0 - x,c);
-  }
-}
 
 void ssd1306_draw_rectangle(uint8_t x1, uint8_t x2, uint8_t y1, uint8_t y2, SSD1306_COLOR c)
 {
@@ -253,33 +204,6 @@ void ssd1306_draw_rectangle(uint8_t x1, uint8_t x2, uint8_t y1, uint8_t y2, SSD1
 	for(i=x1;i<=x2;i++)
 		for(j=y1;j<y2;j++)
 			ssd1306_DrawPixel(i, j, c);
-}
-
-
-void ssd1306_line_v(uint8_t y0, uint8_t y1, uint8_t x, uint8_t width, SSD1306_COLOR c)
-{
-	if(y0>y1)
-	{
-		uint8_t temp = y0;
-		y0 = y1;
-		y1 = temp;
-	}
-	uint8_t i,j;
-	if(width%2)
-	{
-		uint8_t start = x-(width-1)/2;
-		for(i=0;i<width;i++)
-			for(j=y0;j<y1;j++)
-				ssd1306_DrawPixel(start+i, j, c);
-	}
-	else
-	{
-		uint8_t start = x-width/2;
-		for(i=0;i<width;i++)
-			for(j=y0;j<y1;j++)
-				ssd1306_DrawPixel(start+i, j, c);
-	}
-
 }
 
 
@@ -390,7 +314,7 @@ void ssd1306_draw_line( unsigned char x1, unsigned char y1,
 			y2 = yTmp;
 		}
 
-		if((y2-y1) >= (x2-x1) || (y1-y2) >= (x2-x1)) {	// angle larger or equal 45°
+		if((y2-y1) >= (x2-x1) || (y1-y2) >= (x2-x1)) {	// angle larger or equal 45ï¿½
 			length = x2-x1;								// not really the length :)
 			m = ((y2-y1)*200)/length;
 			yAlt = y1;
@@ -411,7 +335,7 @@ void ssd1306_draw_line( unsigned char x1, unsigned char y1,
 				else
 					yAlt = y;
 			}
-		} else {										// angle smaller 45°
+		} else {										// angle smaller 45ï¿½
 			// y1 must be smaller than y2
 			if(y1 > y2) {
 				xTmp = x1;

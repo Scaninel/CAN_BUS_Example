@@ -1,11 +1,15 @@
-#include "usr_system.h"
+/*
+ * usr_screen.c
+ *
+ *  Created on: Oct 6, 2024
+ *      Author: Can
+ */
+#include "main.h"
+#include "cmsis_os.h"
 #include "usr_screen.h"
-#include "usr_lin.h"
 #include "fonts.h"
 #include "ssd1306.h"
-#include <stdio.h>
-
-void initialScreenMessage(char *msg);
+#include "usr_lin.h"
 
 uint8_t writtenCanStat = NTW_INIT;
 uint8_t writtenLinStat = NTW_INIT;
@@ -15,21 +19,13 @@ uint32_t writtenRpm;
 void UsrScreenInit(void)
 {
 	ssd1306_Init();
-	initialScreenMessage("Device is started");
-}
 
-void initialScreenMessage(char *msg)
-{
-    ssd1306_WriteString(msg,Font_7x10,White);
+	ssd1306_WriteString("Device is started",Font_7x10,White);
+	ssd1306_UpdateScreen();
+	osDelay(250);
+	ssd1306_Fill(Black);
+	ssd1306_UpdateScreen();
 
-    ssd1306_UpdateScreen();
-		//HAL_Delay(2000);
-		ssd1306_Fill(Black);
-		ssd1306_UpdateScreen();
-}
-
-void SetMainScreen(void)
-{
 	ssd1306_SetCursor(0, 0);
 	ssd1306_WriteString("CAN :-",Font_7x10,White);
 	ssd1306_SetCursor(0, 10);
@@ -39,7 +35,7 @@ void SetMainScreen(void)
 	ssd1306_UpdateScreen();
 }
 
-void UpdateMainScreen(void)
+void UserScreenLoop(void)
 {
 	if((writtenTemp != g_Received_Temp) || (writtenCanStat != g_Received_CanSt) || (writtenLinStat != g_Received_LinSt) || (writtenRpm != g_Received_rpm))
 	{
@@ -56,7 +52,7 @@ void UpdateMainScreen(void)
 			ssd1306_WriteString("CAN :Off",Font_7x10,White);
 		else
 			ssd1306_WriteString("CAN :-",Font_7x10,White);
-		
+
 		ssd1306_SetCursor(0, 10);
 		if (writtenLinStat == NTW_ON)
 			ssd1306_WriteString("LIN :On",Font_7x10,White);
@@ -64,21 +60,12 @@ void UpdateMainScreen(void)
 			ssd1306_WriteString("LIN :Off",Font_7x10,White);
 		else
 			ssd1306_WriteString("LIN :-",Font_7x10,White);
-						
+
 		char str_writtenTemp[10];
 		sprintf(str_writtenTemp, "%d", writtenTemp);
 		ssd1306_SetCursor(0, 20);
 		ssd1306_WriteString("Temp:",Font_7x10,White);
-		if(g_LIN_TempRxFlg)
-			ssd1306_WriteString(str_writtenTemp,Font_7x10,White);
-		else
-			ssd1306_WriteString("-",Font_7x10,White);
-		
-//		char str_writtenRpm[10];
-//		sprintf(str_writtenRpm, "%d", writtenRpm);
-//		ssd1306_SetCursor(0, 30);
-//		ssd1306_WriteString("Rpm:",Font_7x10,White);
-//		ssd1306_WriteString(str_writtenRpm,Font_7x10,White);
+		ssd1306_WriteString(str_writtenTemp,Font_7x10,White);
 
 		ssd1306_UpdateScreen();
 	}

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,6 +22,7 @@
 #include "stm32l0xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "usr_lin.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,9 +56,8 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern TIM_HandleTypeDef htim6;
 extern UART_HandleTypeDef huart1;
-extern TIM_HandleTypeDef htim22;
+extern TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN EV */
 
@@ -75,7 +75,7 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
+   while (1)
   {
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
@@ -104,31 +104,17 @@ void HardFault_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles TIM6 global interrupt and DAC1/DAC2 underrun error interrupts.
+  * @brief This function handles TIM2 global interrupt.
   */
-void TIM6_DAC_IRQHandler(void)
+void TIM2_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+  /* USER CODE BEGIN TIM2_IRQn 0 */
 
-  /* USER CODE END TIM6_DAC_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim6);
-  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+  /* USER CODE END TIM2_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim2);
+  /* USER CODE BEGIN TIM2_IRQn 1 */
 
-  /* USER CODE END TIM6_DAC_IRQn 1 */
-}
-
-/**
-  * @brief This function handles TIM22 global interrupt.
-  */
-void TIM22_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM22_IRQn 0 */
-
-  /* USER CODE END TIM22_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim22);
-  /* USER CODE BEGIN TIM22_IRQn 1 */
-
-  /* USER CODE END TIM22_IRQn 1 */
+  /* USER CODE END TIM2_IRQn 1 */
 }
 
 /**
@@ -146,5 +132,11 @@ void USART1_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART1)
+  {
+    UsrLinRxCallback();
+  }
+}
 /* USER CODE END 1 */
