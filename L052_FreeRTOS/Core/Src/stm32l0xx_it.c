@@ -123,7 +123,12 @@ void TIM2_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-
+	if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
+    {
+		// IDLE line detected
+        __HAL_UART_CLEAR_IDLEFLAG(&huart1); // Clear the IDLE flag
+		g_LinIdle = true;
+    }
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
@@ -136,6 +141,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART1)
   {
+	//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14);
     UsrLinRxCallback();
   }
 }

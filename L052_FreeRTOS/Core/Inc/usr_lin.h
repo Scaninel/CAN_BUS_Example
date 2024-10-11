@@ -34,6 +34,8 @@ extern uint8_t g_Received_Temp;
 extern uint8_t g_Received_CanSt;
 extern uint8_t g_Received_LinSt;
 extern float g_Received_rpm;
+extern volatile uint8_t g_LinIdle;
+extern uint8_t g_LinSingleMsg;
 
 void LinLoop(void);
 
