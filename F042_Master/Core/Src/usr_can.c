@@ -47,7 +47,12 @@ HAL_StatusTypeDef CAN_DataCheck(void)
 		}
 		else if(RxHeader.StdId == CAN_REF_SPEED_ID)
 		{
-			g_rpmRequest = MAX_MOTOR_SPEED * RxData[0] / 100;
+			uint16_t f_rpmRequestRx = MAX_MOTOR_SPEED * RxData[0] / 100;
+			
+			if(g_motorEnbl != RxData[1] || f_rpmRequestRx != g_rpmRequest)
+				g_MotorStTx = true;
+			
+			g_rpmRequest = f_rpmRequestRx;			
 			g_motorEnbl = RxData[1];
 			
 			g_motorEnbl ? HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET): HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);

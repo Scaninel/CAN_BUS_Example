@@ -22,7 +22,8 @@
 #define LIN_TEMP_WR_ID 	7
 #define LIN_TEMP_R_ID 	77
 #define LIN_NTW_ST_ID 	55
-#define LIN_RPM_WR 			99
+#define LIN_RPM_WR 		99
+#define LIN_MST_WR 		88
 
 #define true 1
 #define false 0
@@ -36,6 +37,8 @@ extern uint8_t g_Received_LinSt;
 extern float g_Received_rpm;
 extern volatile uint8_t g_LinIdle;
 extern uint8_t g_LinSingleMsg;
+extern uint8_t g_MotorSt;
+extern uint16_t g_MotorRefRpm;
 
 void LinLoop(void);
 

@@ -23,6 +23,8 @@ float g_Received_rpm;
 uint8_t g_LinSingleMsg;
 uint8_t LinHeaderReceived;
 volatile uint8_t g_LinIdle;
+uint8_t g_MotorSt;
+uint16_t g_MotorRefRpm;
 
 typedef union U_CONVERTER_TAG
 {
@@ -74,6 +76,12 @@ void LinLoop(void)
 				case LIN_RPM_WR:
 					memcpy(uConvert.buf, &LinRxBuf[4], 4);
 					g_Received_rpm = uConvert.fval;
+					break;
+
+				case LIN_MST_WR:
+					g_MotorSt = LinRxBuf[4];
+					memcpy(uConvert.buf, &LinRxBuf[5], 2);
+					g_MotorRefRpm = uConvert.u16val;
 					break;
 
 				default:

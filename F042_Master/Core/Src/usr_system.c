@@ -25,6 +25,8 @@ float Kd = 3.730893251148e-05;
 float integral;
 float prevMeasured;
 
+uint8_t g_MotorStTx;
+
 void MotorControlProc(void);
 
 void UsrSystemInit(void)

@@ -15,9 +15,10 @@
 #define LIN_TEMP_R_ID 	77
 #define LIN_NTW_ST_ID 	55
 #define LIN_RPM_WR 			99
+#define LIN_MST_WR 			88
 
 #define LIN_STAT_CHECK_TIME (!(systemTimer % 10000))
-#define LIN_RPM_TX_TIME (!(systemTimer % 500))
+#define LIN_RPM_TX_TIME (!(systemTimer % 500) && g_motorEnbl)
 
 typedef union U_CONVERTER_TAG
 {
@@ -59,14 +60,25 @@ void LINProc(void)
 			PRO_LIN_TxHeaderData(LIN_NTW_ST_ID, &g_NetworkSt, 1);
 		}
 		
-//		if(LIN_RPM_TX_TIME)
-//		{
-//			U_CONVERTER uConvert;
-//			
-//			uConvert.fval= g_rpmMeasured;
-//			
-//			PRO_LIN_TxHeaderData(LIN_RPM_WR, uConvert.buf, 4);
-//		}
+		if(LIN_RPM_TX_TIME)
+		{
+			U_CONVERTER uConvert;
+			
+			uConvert.fval= g_rpmMeasured;
+			
+			PRO_LIN_TxHeaderData(LIN_RPM_WR, uConvert.buf, 4);
+		}
+		
+		if(g_MotorStTx)
+		{
+			g_MotorStTx = false;
+			uint8_t buf[8] = {0};
+			
+			buf[0] = g_motorEnbl;
+			memcpy(&buf[1], &g_rpmRequest, 2);
+			
+			PRO_LIN_TxHeaderData(LIN_MST_WR, buf, 3);
+		}
 	}
 
 	if(LIN_STAT_CHECK_TIME)
